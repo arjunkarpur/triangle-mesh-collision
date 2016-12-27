@@ -1,4 +1,5 @@
 #include <igl/viewer/Viewer.h>
+#include "collision/collision_detect.h"
 
 int main(int argc, char *argv[])
 {
@@ -25,6 +26,10 @@ int main(int argc, char *argv[])
     1,6,2,
     2,6,8,
     2,8,4).finished().array()-1;
+
+  // Collision detector
+  CollisionDetect *cd = new CollisionDetect();
+  std::cout << cd->hasCollision(V, F) << std::endl;
 
   // Plot the mesh
   igl::viewer::Viewer viewer;
