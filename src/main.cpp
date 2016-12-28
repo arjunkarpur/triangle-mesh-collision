@@ -73,9 +73,9 @@ int main(int argc, char *argv[])
   // Load triangle mesh
   TriangleMesh mesh = getTriangleMesh();
 
-  // Collision detector: TODO
+  // Collision detector
   CollisionDetect *cd = new CollisionDetect();
-  cd->hasCollision(mesh.V, mesh.F);
+  std::cout << "HAS COLLISIONS: " << cd->hasCollision(mesh.V, mesh.F) << std::endl;
 
   // Plot the mesh
   plot_mesh(mesh);

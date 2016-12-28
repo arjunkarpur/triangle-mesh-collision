@@ -16,7 +16,7 @@ Eigen::MatrixXd BoundingBox::getCorners() {
   return Eigen::MatrixXd(1,1);
 }
 
-bool BoundingBox::intersectsWith(BoundingBox other) {
+bool BoundingBox::intersectsWith(BoundingBox *other) {
   //TODO
   return false;
 }
