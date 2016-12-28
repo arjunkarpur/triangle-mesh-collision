@@ -29,6 +29,7 @@ TriangleMesh getTriangleMesh() {
     2,8,4).finished().array()-1;
   */
 
+  /*
   const Eigen::MatrixXd V = (Eigen::MatrixXd(8,3) <<
     0.0, 0.0, 0.0,
     0.0, 1.0, 0.0,
@@ -45,15 +46,17 @@ TriangleMesh getTriangleMesh() {
     2, 4, 5,
     7, 5, 4,
     4, 6, 7).finished();
+  */
 
-  /*
-  const Eigen::MatrixXd V = (Eigen::MatrixXd(3,3) <<
+  const Eigen::MatrixXd V = (Eigen::MatrixXd(4,3) <<
     0.0, 0.0, 0.0,
     0.0, 1.0, 0.0,
-    1.0, 0.0, 0.0).finished();
-  const Eigen::MatrixXi F = (Eigen::MatrixXi(1, 3) <<
-    2, 1, 0).finished();
-  */
+    1.0, 0.0, 0.0,
+    1.0, 1.0, 0.0).finished();
+  const Eigen::MatrixXi F = (Eigen::MatrixXi(2, 3) <<
+    2, 1, 0,
+    3, 1, 2
+    ).finished();
   TriangleMesh m;
   m.V = V;
   m.F = F;

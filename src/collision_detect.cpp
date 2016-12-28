@@ -18,7 +18,7 @@ bool CollisionDetect::hasCollision(Eigen::MatrixXd V, Eigen::MatrixXi F) {
 
 BVHNode* CollisionDetect::loadMeshToBVH(Eigen::MatrixXd V, Eigen::MatrixXi F) {
 
-  // TODO: Slow?
+  // Get list of indices for triangles and append to triangle data
   Eigen::VectorXi indices(F.rows());
   for (int i = 0; i < F.rows(); i++) {
       indices[i] = i;
