@@ -46,6 +46,14 @@ TriangleMesh getTriangleMesh() {
     7, 5, 4,
     4, 6, 7).finished();
 
+  /*
+  const Eigen::MatrixXd V = (Eigen::MatrixXd(3,3) <<
+    0.0, 0.0, 0.0,
+    0.0, 1.0, 0.0,
+    1.0, 0.0, 0.0).finished();
+  const Eigen::MatrixXi F = (Eigen::MatrixXi(1, 3) <<
+    2, 1, 0).finished();
+  */
   TriangleMesh m;
   m.V = V;
   m.F = F;

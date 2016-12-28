@@ -1,5 +1,6 @@
 #include "collision_detect.h"
 #include "bvh.h"
+#include <iostream>
 
 bool CollisionDetect::hasCollision(Eigen::MatrixXd V, Eigen::MatrixXi F) {
 
@@ -17,7 +18,15 @@ bool CollisionDetect::hasCollision(Eigen::MatrixXd V, Eigen::MatrixXi F) {
 
 BVHNode* CollisionDetect::loadMeshToBVH(Eigen::MatrixXd V, Eigen::MatrixXi F) {
 
-    //TODO: creates a node always, not a root in special case when only 1 triangle
-    BVHNode *root = new BVHNode(&V, F);
-    return root;
+  // TODO: Slow?
+  Eigen::VectorXi indices(F.rows());
+  for (int i = 0; i < F.rows(); i++) {
+      indices[i] = i;
+  }
+  Eigen::MatrixXi indexF(F.rows(), F.cols() + 1);
+  indexF << F, indices;
+
+  //TODO: creates a node always, not a root in special case when only 1 triangle
+  BVHNode *root = new BVHNode(&V, indexF);
+  return root;
 }
