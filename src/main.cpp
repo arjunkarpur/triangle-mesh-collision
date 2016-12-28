@@ -67,6 +67,7 @@ int main(int argc, char *argv[])
 
   // Collision detector: TODO
   CollisionDetect *cd = new CollisionDetect();
+  cd->hasCollision(mesh.V, mesh.F);
 
   // Plot the mesh
   plot_mesh(mesh);
