@@ -2,6 +2,7 @@
 #define __BVH_H__
 
 #include <Eigen/Core>
+#include "bounding_box.h"
 
 /* 
   Declaration of Bounding Volume Heirarchy (BVH) data struct
@@ -12,7 +13,7 @@ class BVHNode {
     BVHNode *left;
     BVHNode *right;
     Eigen::RowVector4i triangle;
-    Eigen::MatrixXd boundingBox;
+    BoundingBox *boundingBox;
 
     BVHNode(Eigen::MatrixXd *allV, Eigen::MatrixXi nodeTris);
     ~BVHNode() {};
@@ -22,17 +23,7 @@ class BVHNode {
     Eigen::MatrixXd *allV;
     void buildNode(Eigen::MatrixXi nodeTris);
     Eigen::MatrixXd triangleToPoints(Eigen::Vector4i triangle);
-    Eigen::MatrixXd findBoundingBox(Eigen::MatrixXd points);
-    Eigen::MatrixXd findBoundingBoxSet(Eigen::MatrixXi triangles);
+    BoundingBox* findBoundingBoxSet(Eigen::MatrixXi triangles);
 };
-
-/* unnecessary
-class BVHLeaf : public BVHNode {
-  public:
-    BVHLeaf(Eigen::)
-    ~BVHLeaf() {};
-    Eigen::RowVector4i triangle;
-};
-*/
 
 #endif

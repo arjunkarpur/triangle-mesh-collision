@@ -3,12 +3,12 @@
 */
 
 #include "bvh.h"
+#include <algorithm>
 
 BVHNode::BVHNode(Eigen::MatrixXd *allV, Eigen::MatrixXi nodeTris) {
   this->allV = allV;
   left = nullptr;
   right = nullptr;
-  boundingBox = Eigen::MatrixXd(8,3);
   buildNode(nodeTris);
 }
 
@@ -17,23 +17,34 @@ void BVHNode::buildNode(Eigen::MatrixXi nodeTris) {
   if (nodeTris.rows() == 1) {
     triangle = nodeTris.block<1,4>(0,0);
     Eigen::MatrixXd points = triangleToPoints(triangle);
-    boundingBox = findBoundingBox(points);
+    boundingBox = new BoundingBox(points);
     return;
   } else {
     triangle = Eigen::RowVector4i(-1, -1, -1, -1);
   }
 
-  // Compute bouding box for triangles, save to class
+  // Compute bouding box for triangles (save to instance var)
   boundingBox = findBoundingBoxSet(nodeTris);
 
   // Determine longest length of bounding box, split into 2
-    //TODO
+  Eigen::MatrixXd minMax = boundingBox->getMinMax();
+
+  double xDiff = minMax(1,0) - minMax(0,0);
+  double yDiff = minMax(1,1) - minMax(0,1);
+  double zDiff = minMax(1,2) - minMax(0,2);
+  double maxDiff = std::max(xDiff, std::max(yDiff, zDiff));
+
+
+  Eigen::MatrixXd boundSplitFirst(boundingBox->getMinMax());
+  Eigen::MatrixXd boundSplitSec(boundingBox->getMinMax());
+
 
   // Partition triangles into 2 sets (depending on side of bounding box)
-    //TODO
+  //TODO
 
-  // Set left and right nodes recursively. If leaves, create leaf
-    //TODO
+  // Create left and right children
+  //left = new BVHNode(allV, leftTriangles);
+  //right = new BVHNode(allV, rightTriangles);
 
   return;
 }
@@ -48,15 +59,7 @@ Eigen::MatrixXd BVHNode::triangleToPoints(Eigen::Vector4i triangle) {
   return points;
 }
 
-Eigen::MatrixXd BVHNode::findBoundingBox(Eigen::MatrixXd points) {
-  Eigen::RowVector3d min = points.colwise().minCoeff();
-  Eigen::RowVector3d max = points.colwise().maxCoeff();
-  Eigen::MatrixXd boundingBox(2,3);
-  boundingBox << min, max;
-  return boundingBox;
-}
-
-Eigen::MatrixXd BVHNode::findBoundingBoxSet(Eigen::MatrixXi triangles) {
+BoundingBox* BVHNode::findBoundingBoxSet(Eigen::MatrixXi triangles) {
   //TODO: strip points from all triangles into matrix
 
   //TODO: call findBoundingBox using points from triangles
@@ -65,7 +68,7 @@ Eigen::MatrixXd BVHNode::findBoundingBoxSet(Eigen::MatrixXi triangles) {
   for (int i = 0; i < triangles.rows(); i++) {
       points.block<3, 3>(i*3, 0) = triangleToPoints(triangles.row(i));
   }
-  return findBoundingBox(points);
+  return (new BoundingBox(points));
 }
 
 
