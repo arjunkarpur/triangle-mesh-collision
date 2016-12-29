@@ -1,60 +1,29 @@
 #include <igl/viewer/Viewer.h>
 #include "collision_detect.h"
 #include "mesh.h"
+#include <string>
+#include <iostream>
 
-TriangleMesh getTriangleMesh() {
+TriangleMesh getTriangleMesh(std::string file) {
   // Inline mesh of a cube
-  const Eigen::MatrixXd V= (Eigen::MatrixXd(8,3)<<
-    0.0,0.0,0.0,
-    0.0,0.0,1.0,
-    0.0,1.0,0.0,
-    0.0,1.0,1.0,
-    1.0,0.0,0.0,
-    1.0,0.0,1.0,
-    1.0,1.0,0.0,
-    1.0,1.0,1.0).finished();
-  const Eigen::MatrixXi F = (Eigen::MatrixXi(12,3)<<
-    1,7,5,
-    1,3,7,
-    1,4,3,
-    1,2,4,
-    3,8,7,
-    3,4,8,
-    5,7,8,
-    5,8,6,
-    1,5,6,
-    1,6,2,
-    2,6,8,
-    2,8,4).finished().array()-1;
 
-  /*
-  const Eigen::MatrixXd V = (Eigen::MatrixXd(8,3) <<
-    0.0, 0.0, 0.0,
-    0.0, 1.0, 0.0,
-    1.0, 0.0, 0.0,
-    1.0, 1.0, 0.0,
-    2.0, 0.0, 0.0,
-    2.0, 1.0, 0.0,
-    3.0, 0.0, 0.0,
-    3.0, 1.0, 0.0).finished();
-  const Eigen::MatrixXi F = (Eigen::MatrixXi(6, 3) <<
-    3, 1, 0,
-    0, 2, 3,
-    5, 3, 2,
-    2, 4, 5,
-    7, 5, 4,
-    4, 6, 7).finished();
+  Eigen::MatrixXd V;
+  Eigen::MatrixXi F;
 
-  const Eigen::MatrixXd V = (Eigen::MatrixXd(4,3) <<
-    0.0, 0.0, 0.0,
-    0.0, 1.0, 0.0,
-    1.0, 0.0, 0.0,
-    1.0, 1.0, 0.0).finished();
-  const Eigen::MatrixXi F = (Eigen::MatrixXi(2, 3) <<
-    2, 1, 0,
-    3, 1, 2
-    ).finished();
-  */
+  std::string fileExt = file.substr(file.find_last_of(".") + 1);
+  std::string meshFilepath = "../meshes/" + file;
+
+  if (fileExt == "off") {
+    igl::readOFF(meshFilepath,V,F);
+  } else {
+    //TODO: other file types
+  }
+
+  if (V.rows() == 0) {
+    std::cout << "Mesh not found: " + meshFilepath << std::endl;
+    exit(-1);
+  }
+
   TriangleMesh m;
   m.V = V;
   m.F = F;
@@ -71,8 +40,13 @@ void plot_mesh(TriangleMesh mesh) {
 int main(int argc, char *argv[])
 {
   
-  // Load triangle mesh
-  TriangleMesh mesh = getTriangleMesh();
+  // Get input mesh file
+  if (argc < 2) {
+    std::cout << "Input file name/ext as cmd line argument" << std::endl;
+    exit(-1);
+  }
+  std::string file = argv[1];
+  TriangleMesh mesh = getTriangleMesh(file);
 
   // Collision detector
   CollisionDetect *cd = new CollisionDetect();
