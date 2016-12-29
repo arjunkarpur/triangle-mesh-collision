@@ -3,6 +3,7 @@
 #include "mesh.h"
 #include <string>
 #include <iostream>
+#include <igl/readPLY.h>
 
 TriangleMesh getTriangleMesh(std::string file) {
   // Inline mesh of a cube
@@ -15,6 +16,8 @@ TriangleMesh getTriangleMesh(std::string file) {
 
   if (fileExt == "off") {
     igl::readOFF(meshFilepath,V,F);
+  } else if (fileExt == "ply") {
+    igl::readPLY(meshFilepath,V,F);
   } else {
     //TODO: other file types
   }
