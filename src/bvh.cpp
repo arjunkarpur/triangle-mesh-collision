@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <assert.h>
 #include <vector>
+#include <iostream>
 
 BVHNode::BVHNode(Eigen::MatrixXd *allV, Eigen::MatrixXi nodeTris) {
   this->allV = allV;
@@ -40,10 +41,6 @@ void BVHNode::buildNode(Eigen::MatrixXi nodeTris) {
   double yDiff = minMax(1,1) - minMax(0,1);
   double zDiff = minMax(1,2) - minMax(0,2);
   double maxDiff = std::max(xDiff, std::max(yDiff, zDiff));
-
-
-
-  
   std::vector<std::pair<double, int>> minInd;
   for (int i = 0; i < nodeTris.rows(); i++) {
     
@@ -72,16 +69,16 @@ void BVHNode::buildNode(Eigen::MatrixXi nodeTris) {
   std::vector<std::pair<double, int>> firstSplit(minInd.begin(), minInd.begin()+half);
   std::vector<std::pair<double, int>> secSplit(minInd.begin()+half, minInd.end());
 
+
   // Copy triangles into matrices to send to child nodes
   Eigen::MatrixXi firstTriangles(firstSplit.size(), 4);
-  Eigen::MatrixXi secTriangles(firstSplit.size(), 4);
+  Eigen::MatrixXi secTriangles(secSplit.size(), 4);
   for (int i = 0; i < firstSplit.size(); i++) {
     std::pair<double, int> curr = firstSplit[i];
     Eigen::RowVectorXi currTriangle = nodeTris.row(curr.second);
     firstTriangles.block<1,4>(i,0) = currTriangle;
   }
   for (int i = 0; i < secSplit.size(); i++) {
-
     std::pair<double, int> curr = secSplit[i];
     Eigen::RowVectorXi currTriangle = nodeTris.row(curr.second);
     secTriangles.block<1,4>(i,0) = currTriangle;

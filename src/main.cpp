@@ -3,7 +3,6 @@
 #include "mesh.h"
 
 TriangleMesh getTriangleMesh() {
-  /*
   // Inline mesh of a cube
   const Eigen::MatrixXd V= (Eigen::MatrixXd(8,3)<<
     0.0,0.0,0.0,
@@ -27,8 +26,8 @@ TriangleMesh getTriangleMesh() {
     1,6,2,
     2,6,8,
     2,8,4).finished().array()-1;
-  */
 
+  /*
   const Eigen::MatrixXd V = (Eigen::MatrixXd(8,3) <<
     0.0, 0.0, 0.0,
     0.0, 1.0, 0.0,
@@ -46,7 +45,6 @@ TriangleMesh getTriangleMesh() {
     7, 5, 4,
     4, 6, 7).finished();
 
-  /*
   const Eigen::MatrixXd V = (Eigen::MatrixXd(4,3) <<
     0.0, 0.0, 0.0,
     0.0, 1.0, 0.0,
