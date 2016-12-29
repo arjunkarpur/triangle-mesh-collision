@@ -13,6 +13,8 @@ class CollisionDetect{
 
   private:
     BVHNode* loadMeshToBVH(Eigen::MatrixXd V, Eigen::MatrixXi F);
+    std::vector<std::pair<int, int>>* findCollisionCandidates(BVHNode* root, Eigen::MatrixXd *V, Eigen::MatrixXi *F);
+    std::vector<std::pair<int, int>>* findCollisionsFromCandidates(std::vector<std::pair<int, int>>* candidates, Eigen::MatrixXd *V, Eigen::MatrixXi *F);
 };
 
 #endif

@@ -1,7 +1,8 @@
-#include "collision_detect.h"
-#include "bvh.h"
 #include <iostream>
 #include <queue>
+#include "collision_detect.h"
+#include "bvh.h"
+#include "bounding_box.h"
 
 void inspectTree(BVHNode *root) {
   int level = 1;
@@ -47,15 +48,18 @@ bool CollisionDetect::hasCollision(Eigen::MatrixXd V, Eigen::MatrixXi F) {
 
   // Construct the BVH data structure
   BVHNode *root = loadMeshToBVH(V, F);
-  inspectTree(root);
+  //inspectTree(root); UNCOMMENT TO PRINT OUT TREE
     
-  //TODO: 
-  //  for each triangle, find collision candidates in BVT
+  // Find collision candidates using BVH
+  std::vector<std::pair<int, int>> *candidates = 
+    findCollisionCandidates(root, &V, &F);
 
-  //TODO: 
-  //  inspect candidates further and find all collisions
+  // Inspect candidates further and find all collisions
+  std::vector<std::pair<int, int>> *collisions = 
+    findCollisionsFromCandidates(candidates, &V, &F);
 
-  return true;
+  //TODO: return more information?
+  return (!collisions->empty());
 }
 
 BVHNode* CollisionDetect::loadMeshToBVH(Eigen::MatrixXd V, Eigen::MatrixXi F) {
@@ -71,4 +75,16 @@ BVHNode* CollisionDetect::loadMeshToBVH(Eigen::MatrixXd V, Eigen::MatrixXi F) {
   //TODO: bug - creates a node always, not a root in special case when only 1 triangle
   BVHNode *root = new BVHNode(&V, indexF);
   return root;
+}
+
+std::vector<std::pair<int, int>>* CollisionDetect::findCollisionCandidates(BVHNode *root, Eigen::MatrixXd *V, Eigen::MatrixXi *F) {
+    //TODO
+
+    // don't forget to check neighbors
+    return new std::vector<std::pair<int, int>>();
+}
+
+std::vector<std::pair<int, int>>* CollisionDetect::findCollisionsFromCandidates(std::vector<std::pair<int, int>> *candidates, Eigen::MatrixXd *V, Eigen::MatrixXi *F) {
+    //TODO
+    return new std::vector<std::pair<int, int>>();
 }
