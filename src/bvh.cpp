@@ -14,6 +14,11 @@ BVHNode::BVHNode(Eigen::MatrixXd *allV, Eigen::MatrixXi nodeTris) {
   buildNode(nodeTris);
 }
 
+bool sortMinInd(std::pair<double, int> i, std::pair<double, int> j) {
+    return (i.first < j.first);
+}
+
+
 void BVHNode::buildNode(Eigen::MatrixXi nodeTris) {
   // If node is a leaf, save triangle/bounding box and exit 
   if (nodeTris.rows() == 1) {
@@ -36,6 +41,53 @@ void BVHNode::buildNode(Eigen::MatrixXi nodeTris) {
   double zDiff = minMax(1,2) - minMax(0,2);
   double maxDiff = std::max(xDiff, std::max(yDiff, zDiff));
 
+
+
+  
+  std::vector<std::pair<double, int>> minInd;
+  for (int i = 0; i < nodeTris.rows(); i++) {
+    
+    BoundingBox *currTriBox= 
+      new BoundingBox(triangleToPoints(nodeTris.row(i)));
+
+    // Get the min value to sort on 
+    //   (depending on longest dimension of bounding box)
+    double minVal = 0;
+    if (maxDiff == xDiff) { //minX
+      minVal = (currTriBox->getMinMax())(0,0);
+    } else if (maxDiff == yDiff) { //minY
+      minVal = (currTriBox->getMinMax())(1,0);
+    } else if (maxDiff == zDiff) { //minZ
+      minVal = (currTriBox->getMinMax())(2,0);
+    } else {
+      // Should never happen! Problem with equality of doubles
+      assert(false);
+    }
+    minInd.push_back(std::pair<double,int>(minVal, i));
+  }
+
+  // Sort minInd and partition triangles into 2 matrices
+  std::sort(minInd.begin(), minInd.end(), sortMinInd);
+  int half = minInd.size()/2;
+  std::vector<std::pair<double, int>> firstSplit(minInd.begin(), minInd.begin()+half);
+  std::vector<std::pair<double, int>> secSplit(minInd.begin()+half, minInd.end());
+
+  // Copy triangles into matrices to send to child nodes
+  Eigen::MatrixXi firstTriangles(firstSplit.size(), 4);
+  Eigen::MatrixXi secTriangles(firstSplit.size(), 4);
+  for (int i = 0; i < firstSplit.size(); i++) {
+    std::pair<double, int> curr = firstSplit[i];
+    Eigen::RowVectorXi currTriangle = nodeTris.row(curr.second);
+    firstTriangles.block<1,4>(i,0) = currTriangle;
+  }
+  for (int i = 0; i < secSplit.size(); i++) {
+
+    std::pair<double, int> curr = secSplit[i];
+    Eigen::RowVectorXi currTriangle = nodeTris.row(curr.second);
+    secTriangles.block<1,4>(i,0) = currTriangle;
+  }
+
+  /*
   // Create 'bounding box' for the two split halves
   Eigen::MatrixXd boundSplitFirst(boundingBox->getMinMax());
   Eigen::MatrixXd boundSplitSec(boundingBox->getMinMax());
@@ -81,6 +133,7 @@ void BVHNode::buildNode(Eigen::MatrixXi nodeTris) {
     Eigen::RowVectorXi currTriangle = nodeTris.row(firstTriangleInd[i]);
     secTriangles.block<1,4>(i,0) = currTriangle;
   }
+  */
 
   // Create left and right children
   left = new BVHNode(allV, firstTriangles);
