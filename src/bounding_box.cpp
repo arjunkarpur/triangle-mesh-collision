@@ -12,7 +12,7 @@ Eigen::MatrixXd BoundingBox::getMinMax() {
 }
 
 Eigen::MatrixXd BoundingBox::getCorners() {
-  //TODO
+  //TODO: implement if necessary
   return Eigen::MatrixXd(1,1);
 }
 

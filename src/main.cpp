@@ -19,7 +19,7 @@ TriangleMesh getTriangleMesh(std::string file) {
   } else if (fileExt == "ply") {
     igl::readPLY(meshFilepath,V,F);
   } else {
-    //TODO: other file types
+    // other file types, implement as necessary
   }
 
   if (V.rows() == 0) {
