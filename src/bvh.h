@@ -3,6 +3,7 @@
 
 #include <Eigen/Core>
 #include "bounding_box.h"
+#include <queue>
 
 /* 
   Declaration of Bounding Volume Heirarchy (BVH) data struct
@@ -20,6 +21,7 @@ class BVHNode {
     ~BVHNode() {};
     bool isLeaf() { return (left == nullptr && right == nullptr); };
     Eigen::MatrixXd triangleToPoints(Eigen::VectorXi triangle);
+    void inspectTree();
 
   private:
     void buildNode(Eigen::MatrixXi nodeTris);

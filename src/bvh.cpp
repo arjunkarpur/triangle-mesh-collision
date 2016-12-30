@@ -106,6 +106,46 @@ BoundingBox* BVHNode::findBoundingBoxSet(Eigen::MatrixXi triangles) {
   return (new BoundingBox(points));
 }
 
+void BVHNode::inspectTree() {
+  int level = 1;
+  std::queue<BVHNode*> *nodes = new std::queue<BVHNode*>();
+  std::queue<BVHNode*> *nextLevel = new std::queue<BVHNode*>();
+
+  nodes->push(this);
+
+  std::cout << level << std::endl;
+  while (true) {
+    if (nodes->empty()) {
+      if (nextLevel->empty()) {
+        break;
+      }
+      nodes = nextLevel;
+      nextLevel = new std::queue<BVHNode*>();
+      level += 1;
+      std::cout << "============" << std::endl;
+      std::cout << level << std::endl;
+    }
+
+    std::cout << "-----" << std::endl;
+    BVHNode *curr = nodes->front();
+    nodes->pop();
+
+    std::cout << "BB: " << curr->boundingBox->getMinMax() << std::endl;
+    std::cout << "LEAF? " << curr->isLeaf() << std::endl;
+    if (curr->isLeaf()) {
+        std::cout << "TRI: " << curr->triangle << std::endl;
+    
+    }
+
+    if (curr->left != nullptr) {
+      nextLevel->push(curr->left);
+    }
+    if (curr->right != nullptr) {
+      nextLevel->push(curr->right);
+    }
+  }
+}
+
 
 /*
     how to construct bvt:
