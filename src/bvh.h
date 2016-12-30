@@ -12,17 +12,17 @@ class BVHNode {
   public:
     BVHNode *left;
     BVHNode *right;
+    Eigen::MatrixXd *allV;
     Eigen::RowVector4i triangle;
     BoundingBox *boundingBox;
 
     BVHNode(Eigen::MatrixXd *allV, Eigen::MatrixXi nodeTris);
     ~BVHNode() {};
     bool isLeaf() { return (left == nullptr && right == nullptr); };
+    Eigen::MatrixXd triangleToPoints(Eigen::VectorXi triangle);
 
   private:
-    Eigen::MatrixXd *allV;
     void buildNode(Eigen::MatrixXi nodeTris);
-    Eigen::MatrixXd triangleToPoints(Eigen::Vector4i triangle);
     BoundingBox* findBoundingBoxSet(Eigen::MatrixXi triangles);
 };
 

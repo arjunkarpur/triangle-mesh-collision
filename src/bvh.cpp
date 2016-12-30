@@ -89,7 +89,7 @@ void BVHNode::buildNode(Eigen::MatrixXi nodeTris) {
   return;
 }
 
-Eigen::MatrixXd BVHNode::triangleToPoints(Eigen::Vector4i triangle) {
+Eigen::MatrixXd BVHNode::triangleToPoints(Eigen::VectorXi triangle) {
   Eigen::RowVector3d p1 = (*allV).block<1,3>(triangle(0), 0);
   Eigen::RowVector3d p2 = (*allV).block<1,3>(triangle(1), 0);
   Eigen::RowVector3d p3 = (*allV).block<1,3>(triangle(2), 0);
