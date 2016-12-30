@@ -8,12 +8,12 @@ std::vector<std::pair<int, int>> CollisionDetect::findCollisions(Eigen::MatrixXd
     
   // Find collision candidates using BVH
   std::vector<std::pair<int, int>> *candidates = 
-    findCollisionCandidates(root, &F);
+    findCollisionCandidates(root, &V, &F);
   std::cout << "CANDIDATES: " << candidates->size() << std::endl;
 
   // Inspect candidates further and find all collisions
   std::vector<std::pair<int, int>> *collisions = 
-    findCollisionsFromCandidates(candidates, &V, &F, root);
+    findCollisionsFromCandidates(candidates, &V, &F);
 
   return *collisions;
 }
@@ -33,21 +33,21 @@ BVHNode* CollisionDetect::loadMeshToBVH(Eigen::MatrixXd V, Eigen::MatrixXi F) {
   return root;
 }
 
-std::vector<std::pair<int, int>>* CollisionDetect::findCollisionCandidates(BVHNode *root, Eigen::MatrixXi *F) {
+std::vector<std::pair<int, int>>* CollisionDetect::findCollisionCandidates(BVHNode *root, Eigen::MatrixXd *V, Eigen::MatrixXi *F) {
 
   // Create candidates vector (pairs of triangle indices)
   std::vector<std::pair<int, int>> *candidates = 
     new std::vector<std::pair<int, int>>();
 
   // Get all vertices from BVHNode root
-  Eigen::MatrixXd *V = root->allV;
+  //Eigen::MatrixXd *V = root->allV;
 
   // Find candidates for each triangle in mesh
   for (int i = 0; i < F->rows(); i++) {
 
     // Get bounding box for current triangle
     Eigen::VectorXi currTri = F->row(i);
-    Eigen::MatrixXd triPoints = root->triangleToPoints(currTri);
+    Eigen::MatrixXd triPoints = BVHNode::triangleToPoints(V, currTri);
     BoundingBox *currTriBox = new BoundingBox(triPoints);
 
     // Find collision candidates by crawling tree
@@ -68,7 +68,7 @@ std::vector<std::pair<int, int>>* CollisionDetect::findCollisionCandidates(BVHNo
         // Check if ind of otherInd > mine. Prevents candidates dupes
         if (otherInd > i) {
           // Make sure triangles aren't neighbors (share vert)
-          if (!triNeighbors(curr, currTri, otherTri)) {
+          if (!triNeighbors(V, currTri, otherTri)) {
             // Add triangle indices to candidates list
             candidates->push_back(std::pair<int, int>(i, otherInd));
           }
@@ -90,8 +90,7 @@ std::vector<std::pair<int, int>>* CollisionDetect::findCollisionCandidates(BVHNo
   return candidates; 
 }
 
-// TODO: fix so don't need to pass in node
-std::vector<std::pair<int, int>>* CollisionDetect::findCollisionsFromCandidates(std::vector<std::pair<int, int>> *candidates, Eigen::MatrixXd *V, Eigen::MatrixXi *F, BVHNode *node) {
+std::vector<std::pair<int, int>>* CollisionDetect::findCollisionsFromCandidates(std::vector<std::pair<int, int>> *candidates, Eigen::MatrixXd *V, Eigen::MatrixXi *F) {
   
   // Vector of confirmed collisions to return
   std::vector<std::pair<int, int>> *collisions = 
@@ -103,8 +102,8 @@ std::vector<std::pair<int, int>>* CollisionDetect::findCollisionsFromCandidates(
     std::pair<int, int> curr = candidates->at(i);
     Eigen::VectorXi triOne = F->row(curr.first);
     Eigen::VectorXi triTwo = F->row(curr.second);
-    Eigen::MatrixXd pointsOne = node->triangleToPoints(triOne);
-    Eigen::MatrixXd pointsTwo = node->triangleToPoints(triTwo);
+    Eigen::MatrixXd pointsOne = BVHNode::triangleToPoints(V, triOne);
+    Eigen::MatrixXd pointsTwo = BVHNode::triangleToPoints(V, triTwo);
 
     // Check if true collision
     if (trianglesIntersect(pointsOne, pointsTwo)) {
@@ -114,12 +113,11 @@ std::vector<std::pair<int, int>>* CollisionDetect::findCollisionsFromCandidates(
   return collisions;
 }
 
-bool CollisionDetect::triNeighbors(BVHNode *node, Eigen::VectorXi triOne, Eigen::VectorXi triTwo) {
+bool CollisionDetect::triNeighbors(Eigen::MatrixXd *V, Eigen::VectorXi triOne, Eigen::VectorXi triTwo) {
   // Returns true iff triangles share at least 1 point
-    // NOTE: node doesn't matter, only needs triangleToPoints method of the node
 
-  Eigen::MatrixXd triOnePoints = node->triangleToPoints(triOne);
-  Eigen::MatrixXd triTwoPoints = node->triangleToPoints(triTwo);
+  Eigen::MatrixXd triOnePoints = BVHNode::triangleToPoints(V, triOne);
+  Eigen::MatrixXd triTwoPoints = BVHNode::triangleToPoints(V, triTwo);
 
   // Check every pair of points for equality
   for (int i = 0; i < triOnePoints.rows(); i++) {

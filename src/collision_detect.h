@@ -17,9 +17,9 @@ class CollisionDetect{
 
   private:
     BVHNode* loadMeshToBVH(Eigen::MatrixXd V, Eigen::MatrixXi F);
-    std::vector<std::pair<int, int>>* findCollisionCandidates(BVHNode* root, Eigen::MatrixXi *F);
-    std::vector<std::pair<int, int>>* findCollisionsFromCandidates(std::vector<std::pair<int, int>>* candidates, Eigen::MatrixXd *V, Eigen::MatrixXi *F, BVHNode *node);
-    bool triNeighbors(BVHNode *node, Eigen::VectorXi triOne, Eigen::VectorXi triTwo);
+    std::vector<std::pair<int, int>>* findCollisionCandidates(BVHNode* root, Eigen::MatrixXd *V, Eigen::MatrixXi *F);
+    std::vector<std::pair<int, int>>* findCollisionsFromCandidates(std::vector<std::pair<int, int>>* candidates, Eigen::MatrixXd *V, Eigen::MatrixXi *F);
+    bool triNeighbors(Eigen::MatrixXd *V, Eigen::VectorXi triOne, Eigen::VectorXi triTwo);
     bool trianglesIntersect(Eigen::MatrixXd pointsOne, Eigen::MatrixXd pointsTwo);
     bool edgeTriangleIntersect(Eigen::Vector3d v0, Eigen::Vector3d v1, Eigen::MatrixXd trianglePoints);
 };

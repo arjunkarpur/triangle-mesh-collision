@@ -9,21 +9,20 @@
 #include <iostream>
 
 BVHNode::BVHNode(Eigen::MatrixXd *allV, Eigen::MatrixXi nodeTris) {
-  this->allV = allV;
   left = nullptr;
   right = nullptr;
-  buildNode(nodeTris);
+  buildNode(allV, nodeTris);
 }
 
 bool sortMinInd(std::pair<double, int> i, std::pair<double, int> j) {
     return (i.first < j.first);
 }
 
-void BVHNode::buildNode(Eigen::MatrixXi nodeTris) {
+void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi nodeTris) {
   // If node is a leaf, save triangle/bounding box and exit 
   if (nodeTris.rows() == 1) {
     triangle = nodeTris.row(0);
-    Eigen::MatrixXd points = triangleToPoints(triangle);
+    Eigen::MatrixXd points = BVHNode::triangleToPoints(allV, triangle);
     boundingBox = new BoundingBox(points);
     return;
   } else {
@@ -31,7 +30,7 @@ void BVHNode::buildNode(Eigen::MatrixXi nodeTris) {
   }
 
   // Compute bouding box for triangles (save to instance var)
-  boundingBox = findBoundingBoxSet(nodeTris);
+  boundingBox = findBoundingBoxSet(allV, nodeTris);
 
   // Determine longest length of bounding box, split into 2
   Eigen::MatrixXd minMax = boundingBox->getMinMax();
@@ -44,7 +43,7 @@ void BVHNode::buildNode(Eigen::MatrixXi nodeTris) {
   for (int i = 0; i < nodeTris.rows(); i++) {
     
     BoundingBox *currTriBox= 
-      new BoundingBox(triangleToPoints(nodeTris.row(i)));
+      new BoundingBox(BVHNode::triangleToPoints(allV, nodeTris.row(i)));
 
     // Get the min value to sort on 
     //   (depending on longest dimension of bounding box)
@@ -89,19 +88,19 @@ void BVHNode::buildNode(Eigen::MatrixXi nodeTris) {
   return;
 }
 
-Eigen::MatrixXd BVHNode::triangleToPoints(Eigen::VectorXi triangle) {
-  Eigen::RowVector3d p1 = (*allV).block<1,3>(triangle(0), 0);
-  Eigen::RowVector3d p2 = (*allV).block<1,3>(triangle(1), 0);
-  Eigen::RowVector3d p3 = (*allV).block<1,3>(triangle(2), 0);
-  Eigen::MatrixXd points(3, 3);
-  points << p1, p2, p3;
-  return points;
+Eigen::MatrixXd BVHNode::triangleToPoints(Eigen::MatrixXd *points, Eigen::VectorXi triangle) {
+  Eigen::RowVector3d p1 = points->block<1,3>(triangle(0), 0);
+  Eigen::RowVector3d p2 = points->block<1,3>(triangle(1), 0);
+  Eigen::RowVector3d p3 = points->block<1,3>(triangle(2), 0);
+  Eigen::MatrixXd triPoints(3, 3);
+  triPoints << p1, p2, p3;
+  return triPoints;
 }
 
-BoundingBox* BVHNode::findBoundingBoxSet(Eigen::MatrixXi triangles) {
+BoundingBox* BVHNode::findBoundingBoxSet(Eigen::MatrixXd *allV, Eigen::MatrixXi triangles) {
   Eigen::MatrixXd points(triangles.rows()*3, 3);
   for (int i = 0; i < triangles.rows(); i++) {
-      points.block<3, 3>(i*3, 0) = triangleToPoints(triangles.row(i));
+      points.block<3, 3>(i*3, 0) = BVHNode::triangleToPoints(allV, triangles.row(i));
   }
   return (new BoundingBox(points));
 }
