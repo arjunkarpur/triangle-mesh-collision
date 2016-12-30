@@ -212,8 +212,8 @@ bool CollisionDetect::edgeTriangleIntersect(Eigen::Vector3d v0, Eigen::Vector3d 
   if (t >= 0 && t <= 1) {
     // If true, line segment intersects with plane
 
-    if (u >= 0 && u <= 0 &&
-        v >= 0 && v <= 0 &&
+    if (u >= 0 && u <= 1 &&
+        v >= 0 && v <= 1 &&
         u + v <= 1) {
       // If true, intersection inside triangle
       return true;
