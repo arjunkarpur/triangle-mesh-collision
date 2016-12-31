@@ -161,7 +161,7 @@ bool CollisionDetect::trianglesIntersect(Eigen::MatrixXd pointsOne, Eigen::Matri
 }
 
 bool isApprox(double val, double target) {
-  double epsilon = .0001;
+  double epsilon = .000000001;
   return ( std::abs(val-target) < epsilon );
 }
 
@@ -195,13 +195,10 @@ bool CollisionDetect::edgeTriangleIntersect(Eigen::Vector3d v0, Eigen::Vector3d 
     //  right now, assumes not
     return false;
   } 
-
-  // v0, v1 - line
-  // t0, t1, t2 - triangle
-
+  
   // Solve for t, u, v
   Eigen::MatrixXd directions = (Eigen::MatrixXd(3,3));
-  directions << (v0-v1), (t1-t0), (t2-t0); //TODO: make sure in right order (columns)
+  directions << (v0-v1), (t1-t0), (t2-t0);
   Eigen::VectorXd consts = v0 - t0;
   Eigen::VectorXd sols = (directions.inverse())*consts;
 

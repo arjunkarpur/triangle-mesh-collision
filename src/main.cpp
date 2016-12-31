@@ -58,5 +58,5 @@ int main(int argc, char *argv[])
   std::cout << "COLLISIONS: " << collisions.size() << std::endl;
 
   // Plot the mesh
-  //plot_mesh(mesh);
+  plot_mesh(mesh);
 }
