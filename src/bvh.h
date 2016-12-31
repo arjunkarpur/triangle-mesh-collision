@@ -16,15 +16,15 @@ class BVHNode {
     Eigen::RowVector4i triangle;
     BoundingBox *boundingBox;
 
-    BVHNode(Eigen::MatrixXd *allV, Eigen::MatrixXi nodeTris);
+    BVHNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *nodeTris);
     ~BVHNode() {};
     bool isLeaf() { return (left == nullptr && right == nullptr); };
     void inspectTree();
     static Eigen::MatrixXd triangleToPoints(Eigen::MatrixXd *points, Eigen::VectorXi triangle);
 
   private:
-    void buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi nodeTris);
-    BoundingBox* findBoundingBoxSet(Eigen::MatrixXd *allV, Eigen::MatrixXi triangles);
+    void buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *nodeTris);
+    BoundingBox* findBoundingBoxSet(Eigen::MatrixXd *allV, Eigen::MatrixXi *triangles);
 };
 
 #endif

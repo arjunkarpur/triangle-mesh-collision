@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
   // Collision detector
   CollisionDetect *cd = new CollisionDetect();
   std::vector<std::pair<int, int>> collisions = 
-    cd->findCollisions(mesh.V, mesh.F);
+    cd->findCollisions(&(mesh.V), &(mesh.F));
   std::cout << "COLLISIONS: " << collisions.size() << std::endl;
   
   // Plot the mesh and show collisions

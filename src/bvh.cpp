@@ -8,7 +8,7 @@
 #include <vector>
 #include <iostream>
 
-BVHNode::BVHNode(Eigen::MatrixXd *allV, Eigen::MatrixXi nodeTris) {
+BVHNode::BVHNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *nodeTris) {
   left = nullptr;
   right = nullptr;
   buildNode(allV, nodeTris);
@@ -18,10 +18,10 @@ bool sortMinInd(std::pair<double, int> i, std::pair<double, int> j) {
     return (i.first < j.first);
 }
 
-void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi nodeTris) {
+void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *nodeTris) {
   // If node is a leaf, save triangle/bounding box and exit 
-  if (nodeTris.rows() == 1) {
-    triangle = nodeTris.row(0);
+  if (nodeTris->rows() == 1) {
+    triangle = nodeTris->row(0);
     Eigen::MatrixXd points = BVHNode::triangleToPoints(allV, triangle);
     boundingBox = new BoundingBox(points);
     return;
@@ -40,10 +40,10 @@ void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi nodeTris) {
   double zDiff = minMax(1,2) - minMax(0,2);
   double maxDiff = std::max(xDiff, std::max(yDiff, zDiff));
   std::vector<std::pair<double, int>> minInd;
-  for (int i = 0; i < nodeTris.rows(); i++) {
+  for (int i = 0; i < nodeTris->rows(); i++) {
     
     BoundingBox *currTriBox= 
-      new BoundingBox(BVHNode::triangleToPoints(allV, nodeTris.row(i)));
+      new BoundingBox(BVHNode::triangleToPoints(allV, nodeTris->row(i)));
 
     // Get the min value to sort on 
     //   (depending on longest dimension of bounding box)
@@ -72,18 +72,18 @@ void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi nodeTris) {
   Eigen::MatrixXi secTriangles(secSplit.size(), 4);
   for (int i = 0; i < firstSplit.size(); i++) {
     std::pair<double, int> curr = firstSplit[i];
-    Eigen::RowVectorXi currTriangle = nodeTris.row(curr.second);
+    Eigen::RowVectorXi currTriangle = nodeTris->row(curr.second);
     firstTriangles.block<1,4>(i,0) = currTriangle;
   }
   for (int i = 0; i < secSplit.size(); i++) {
     std::pair<double, int> curr = secSplit[i];
-    Eigen::RowVectorXi currTriangle = nodeTris.row(curr.second);
+    Eigen::RowVectorXi currTriangle = nodeTris->row(curr.second);
     secTriangles.block<1,4>(i,0) = currTriangle;
   }
 
   // Create left and right children
-  left = new BVHNode(allV, firstTriangles);
-  right = new BVHNode(allV, secTriangles);
+  left = new BVHNode(allV, &firstTriangles);
+  right = new BVHNode(allV, &secTriangles);
 
   return;
 }
@@ -97,10 +97,10 @@ Eigen::MatrixXd BVHNode::triangleToPoints(Eigen::MatrixXd *points, Eigen::Vector
   return triPoints;
 }
 
-BoundingBox* BVHNode::findBoundingBoxSet(Eigen::MatrixXd *allV, Eigen::MatrixXi triangles) {
-  Eigen::MatrixXd points(triangles.rows()*3, 3);
-  for (int i = 0; i < triangles.rows(); i++) {
-      points.block<3, 3>(i*3, 0) = BVHNode::triangleToPoints(allV, triangles.row(i));
+BoundingBox* BVHNode::findBoundingBoxSet(Eigen::MatrixXd *allV, Eigen::MatrixXi *triangles) {
+  Eigen::MatrixXd points(triangles->rows()*3, 3);
+  for (int i = 0; i < triangles->rows(); i++) {
+      points.block<3, 3>(i*3, 0) = BVHNode::triangleToPoints(allV, triangles->row(i));
   }
   return (new BoundingBox(points));
 }

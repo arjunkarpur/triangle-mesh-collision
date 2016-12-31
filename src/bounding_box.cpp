@@ -18,7 +18,7 @@ Eigen::MatrixXd BoundingBox::getCorners() {
 
 bool BoundingBox::intersectsWith(BoundingBox *other) {
   Eigen::VectorXd myMin(minMax.row(0)); 
-  Eigen::VectorXd myMax(minMax.row(1));;
+  Eigen::VectorXd myMax(minMax.row(1));
   Eigen::VectorXd otherMin(other->getMinMax().row(0));
   Eigen::VectorXd otherMax(other->getMinMax().row(1));
 

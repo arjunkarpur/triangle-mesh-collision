@@ -1,6 +1,6 @@
 #include "collision_detect.h"
 
-std::vector<std::pair<int, int>> CollisionDetect::findCollisions(Eigen::MatrixXd V, Eigen::MatrixXi F) {
+std::vector<std::pair<int, int>> CollisionDetect::findCollisions(Eigen::MatrixXd *V, Eigen::MatrixXi *F) {
 
   // Construct the BVH data structure
   BVHNode *root = loadMeshToBVH(V, F);
@@ -8,28 +8,28 @@ std::vector<std::pair<int, int>> CollisionDetect::findCollisions(Eigen::MatrixXd
     
   // Find collision candidates using BVH
   std::vector<std::pair<int, int>> *candidates = 
-    findCollisionCandidates(root, &V, &F);
+    findCollisionCandidates(root, V, F);
   std::cout << "CANDIDATES: " << candidates->size() << std::endl;
 
   // Inspect candidates further and find all collisions
   std::vector<std::pair<int, int>> *collisions = 
-    findCollisionsFromCandidates(candidates, &V, &F);
+    findCollisionsFromCandidates(candidates, V, F);
 
   return *collisions;
 }
 
-BVHNode* CollisionDetect::loadMeshToBVH(Eigen::MatrixXd V, Eigen::MatrixXi F) {
+BVHNode* CollisionDetect::loadMeshToBVH(Eigen::MatrixXd *V, Eigen::MatrixXi *F) {
 
   // Get list of indices for triangles and append to triangle data
-  Eigen::VectorXi indices(F.rows());
-  for (int i = 0; i < F.rows(); i++) {
+  Eigen::VectorXi indices(F->rows());
+  for (int i = 0; i < F->rows(); i++) {
       indices[i] = i;
   }
-  Eigen::MatrixXi indexF(F.rows(), F.cols() + 1);
-  indexF << F, indices;
+  Eigen::MatrixXi indexF(F->rows(), F->cols() + 1);
+  indexF << *F, indices;
 
   //TODO: bug - creates a node always, not a root in special case when only 1 triangle
-  BVHNode *root = new BVHNode(&V, indexF);
+  BVHNode *root = new BVHNode(V, &indexF);
   return root;
 }
 
