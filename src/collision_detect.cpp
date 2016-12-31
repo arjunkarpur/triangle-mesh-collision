@@ -2,19 +2,23 @@
 
 std::vector<std::pair<int, int>> CollisionDetect::findCollisions(Eigen::MatrixXd *V, Eigen::MatrixXi *F) {
 
+
+  // Get all triangles points from V/F
+  std::vector<Eigen::MatrixXd> *allTriPoints =
+    getAllTrianglePoints(V, F);
+
   std::cout << "start" << std::endl;
   double begin = std::clock();
   // Construct the BVH data structure
-  BVHNode *root = loadMeshToBVH(V, F);
+  BVHNode *root = loadMeshToBVH(V, F, allTriPoints);
   std::cout << "Tree construction: " << (std::clock() - begin) / CLOCKS_PER_SEC << std::endl;
 
   //root->inspectTree(); 
-
     
   begin = std::clock();
   // Find collision candidates using BVH
   std::vector<std::pair<int, int>> *candidates = 
-    findCollisionCandidates(root, V, F);
+    findCollisionCandidates(root, V, F, allTriPoints);
   std::cout << "CANDIDATES: " << candidates->size() << std::endl;
 
   std::cout << "Finding candidates: " << (std::clock() - begin) / CLOCKS_PER_SEC << std::endl;
@@ -29,13 +33,7 @@ std::vector<std::pair<int, int>> CollisionDetect::findCollisions(Eigen::MatrixXd
   return *collisions;
 }
 
-BVHNode* CollisionDetect::loadMeshToBVH(Eigen::MatrixXd *V, Eigen::MatrixXi *F) {
-
-  // Get list of indices for all triangles
-  std::vector<int> inds;
-  for (int i = 0; i < F->rows(); i++) {
-      inds.push_back(i);
-  }
+std::vector<Eigen::MatrixXd>* CollisionDetect::getAllTrianglePoints(Eigen::MatrixXd *V, Eigen::MatrixXi *F) {
 
   // Get points for all triangles
   std::vector<Eigen::MatrixXd> *allTriPoints =
@@ -46,18 +44,28 @@ BVHNode* CollisionDetect::loadMeshToBVH(Eigen::MatrixXd *V, Eigen::MatrixXi *F) 
     );
   }
 
+  return allTriPoints;
+}
+
+
+BVHNode* CollisionDetect::loadMeshToBVH(Eigen::MatrixXd *V, Eigen::MatrixXi *F, std::vector<Eigen::MatrixXd> *allTriPoints) {
+
+  // Get list of indices for all triangles
+  std::vector<int> inds;
+  for (int i = 0; i < F->rows(); i++) {
+      inds.push_back(i);
+  }
+
+  
   //TODO: bug - creates a node always, not a root in special case when only 1 triangle
   return new BVHNode(V, F, allTriPoints, inds);
 }
 
-std::vector<std::pair<int, int>>* CollisionDetect::findCollisionCandidates(BVHNode *root, Eigen::MatrixXd *V, Eigen::MatrixXi *F) {
+std::vector<std::pair<int, int>>* CollisionDetect::findCollisionCandidates(BVHNode *root, Eigen::MatrixXd *V, Eigen::MatrixXi *F, std::vector<Eigen::MatrixXd> *allTriPoints) {
 
   // Create candidates vector (pairs of triangle indices)
   std::vector<std::pair<int, int>> *candidates = 
     new std::vector<std::pair<int, int>>();
-
-  // Get all vertices from BVHNode root
-  //Eigen::MatrixXd *V = root->allV;
 
   // Find candidates for each triangle in mesh
   std::cout << "start" << std::endl;
@@ -71,8 +79,8 @@ std::vector<std::pair<int, int>>* CollisionDetect::findCollisionCandidates(BVHNo
 
     // Get bounding box for current triangle
     Eigen::VectorXi currTri = F->row(i);
-    Eigen::MatrixXd triPoints = BVHNode::triangleToPoints(V, currTri);
-    BoundingBox currTriBox(&triPoints);
+    //Eigen::MatrixXd triPoints = allTriPoints->at(i);
+    BoundingBox currTriBox(&(allTriPoints->at(i)));
     double endBB = std::clock();
     //std::cout << "Get BB: " << (endBB - beginBB)/CLOCKS_PER_SEC << std::endl;
 
