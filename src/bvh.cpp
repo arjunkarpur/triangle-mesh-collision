@@ -33,7 +33,7 @@ void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *nodeTris) {
   boundingBox = findBoundingBoxSet(allV, nodeTris);
 
   // Determine longest length of bounding box, split into 2
-  Eigen::MatrixXd minMax = boundingBox->getMinMax();
+  Eigen::MatrixXd minMax = boundingBox->minMax;
 
   double xDiff = minMax(1,0) - minMax(0,0);
   double yDiff = minMax(1,1) - minMax(0,1);
@@ -50,11 +50,11 @@ void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *nodeTris) {
     //   (depending on longest dimension of bounding box)
     double minVal = 0;
     if (maxDiff == xDiff) { //minX
-      minVal = (currTriBox->getMinMax())(0,0);
+      minVal = (currTriBox->minMax)(0,0);
     } else if (maxDiff == yDiff) { //minY
-      minVal = (currTriBox->getMinMax())(0,1);
+      minVal = (currTriBox->minMax)(0,1);
     } else if (maxDiff == zDiff) { //minZ
-      minVal = (currTriBox->getMinMax())(0,2);
+      minVal = (currTriBox->minMax)(0,2);
     } else {
       // Should never happen! Problem with equality of doubles
       assert(false);
@@ -130,7 +130,7 @@ void BVHNode::inspectTree() {
     BVHNode *curr = nodes->front();
     nodes->pop();
 
-    std::cout << "BB: " << curr->boundingBox->getMinMax() << std::endl;
+    std::cout << "BB: " << curr->boundingBox->minMax << std::endl;
     std::cout << "LEAF? " << curr->isLeaf() << std::endl;
     if (curr->isLeaf()) {
         std::cout << "TRI: " << curr->triangle << std::endl;

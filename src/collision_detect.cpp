@@ -68,7 +68,7 @@ std::vector<std::pair<int, int>>* CollisionDetect::findCollisionCandidates(BVHNo
     Eigen::MatrixXd triPoints = BVHNode::triangleToPoints(V, currTri);
     BoundingBox currTriBox(triPoints);
     double endBB = std::clock();
-    std::cout << "Get BB: " << (endBB - beginBB)/CLOCKS_PER_SEC << std::endl;
+    //std::cout << "Get BB: " << (endBB - beginBB)/CLOCKS_PER_SEC << std::endl;
 
     // Find collision candidates by crawling tree
     double beginTree = std::clock();
@@ -114,9 +114,9 @@ std::vector<std::pair<int, int>>* CollisionDetect::findCollisionCandidates(BVHNo
       collisionChecks += 1;
     }
     double endTree = std::clock();
-    std::cout << "Collision_checks: " << (collisionCheckTime)/CLOCKS_PER_SEC << std::endl;
-    std::cout << "num Collision_checks: " << collisionChecks << std::endl;
-    std::cout << "Get tree: " << (endTree - beginTree)/CLOCKS_PER_SEC << std::endl;
+    //std::cout << "Collision_checks: " << (collisionCheckTime)/CLOCKS_PER_SEC << std::endl;
+    //std::cout << "num Collision_checks: " << collisionChecks << std::endl;
+    //std::cout << "Get tree: " << (endTree - beginTree)/CLOCKS_PER_SEC << std::endl;
 
 
     avgProcess += count;
