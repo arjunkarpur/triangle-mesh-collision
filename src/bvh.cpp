@@ -43,7 +43,6 @@ void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *nodeTris) {
 
   // Determine longest length of bounding box, split into 2
   Eigen::MatrixXd minMax = boundingBox->minMax;
-
   double xDiff = minMax(1,0) - minMax(0,0);
   double yDiff = minMax(1,1) - minMax(0,1);
   double zDiff = minMax(1,2) - minMax(0,2);
@@ -53,7 +52,6 @@ void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *nodeTris) {
   for (int i = 0; i < nodeTris->rows(); i++) {
     Eigen::MatrixXd triPoints = allTriPoints.at(i);
     BoundingBox currTriBox(&triPoints);
-
     // Get the min value to sort on 
     //   (depending on longest dimension of bounding box)
     double minVal = 0;
@@ -80,14 +78,12 @@ void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *nodeTris) {
   Eigen::MatrixXi firstTriangles(firstSplit.size(), 4);
   Eigen::MatrixXi secTriangles(secSplit.size(), 4);
   for (int i = 0; i < firstSplit.size(); i++) {
-    std::pair<double, int> curr = firstSplit[i];
-    Eigen::RowVectorXi currTriangle = nodeTris->row(curr.second);
-    firstTriangles.block<1,4>(i,0) = currTriangle;
+    firstTriangles.block<1,4>(i,0) = 
+      nodeTris->row(firstSplit[i].second);
   }
   for (int i = 0; i < secSplit.size(); i++) {
-    std::pair<double, int> curr = secSplit[i];
-    Eigen::RowVectorXi currTriangle = nodeTris->row(curr.second);
-    secTriangles.block<1,4>(i,0) = currTriangle;
+    secTriangles.block<1,4>(i,0) = 
+      nodeTris->row(secSplit[i].second);
   }
 
   double end = std::clock();
