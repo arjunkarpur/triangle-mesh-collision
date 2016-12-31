@@ -8,7 +8,7 @@ class BoundingBox {
     Eigen::MatrixXd minMax;
 
     BoundingBox() {};
-    BoundingBox(Eigen::MatrixXd points);
+    BoundingBox(Eigen::MatrixXd *points);
     ~BoundingBox(){};
     Eigen::MatrixXd getCorners();
     bool intersectsWith(BoundingBox *otherBox);

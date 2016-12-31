@@ -19,11 +19,14 @@ bool sortMinInd(std::pair<double, int> i, std::pair<double, int> j) {
 }
 
 void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *nodeTris) {
+  double begin = std::clock();
   // If node is a leaf, save triangle/bounding box and exit 
   if (nodeTris->rows() == 1) {
     triangle = nodeTris->row(0);
     Eigen::MatrixXd points = BVHNode::triangleToPoints(allV, triangle);
-    boundingBox = new BoundingBox(points);
+    boundingBox = new BoundingBox(&points);
+    double endLeaf = std::clock();
+    //std::cout << "leaf constr: " << (endLeaf-begin)/CLOCKS_PER_SEC << std::endl;
     return;
   } else {
     triangle = Eigen::RowVector4i(-1, -1, -1, -1);
@@ -43,8 +46,8 @@ void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *nodeTris) {
 
 
   for (int i = 0; i < nodeTris->rows(); i++) {
-    BoundingBox *currTriBox= 
-      new BoundingBox(BVHNode::triangleToPoints(allV, nodeTris->row(i)));
+    Eigen::MatrixXd triPoints = BVHNode::triangleToPoints(allV, nodeTris->row(i));
+    BoundingBox *currTriBox= new BoundingBox(&triPoints);
 
     // Get the min value to sort on 
     //   (depending on longest dimension of bounding box)
@@ -82,6 +85,9 @@ void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *nodeTris) {
     secTriangles.block<1,4>(i,0) = currTriangle;
   }
 
+  double end = std::clock();
+  ///std::cout << "node constr: " << (end-begin)/CLOCKS_PER_SEC << std::endl;
+
   // Create left and right children
   left = new BVHNode(allV, &firstTriangles);
   right = new BVHNode(allV, &secTriangles);
@@ -103,7 +109,7 @@ BoundingBox* BVHNode::findBoundingBoxSet(Eigen::MatrixXd *allV, Eigen::MatrixXi 
   for (int i = 0; i < triangles->rows(); i++) {
       points.block<3, 3>(i*3, 0) = BVHNode::triangleToPoints(allV, triangles->row(i));
   }
-  return (new BoundingBox(points));
+  return (new BoundingBox(&points));
 }
 
 void BVHNode::inspectTree() {

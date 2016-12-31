@@ -1,10 +1,10 @@
 #include "bounding_box.h"
 
-BoundingBox::BoundingBox(Eigen::MatrixXd points) {
+BoundingBox::BoundingBox(Eigen::MatrixXd *points) {
   minMax = Eigen::MatrixXd(2,3); 
   minMax <<
-    points.colwise().minCoeff(),
-    points.colwise().maxCoeff();
+    points->colwise().minCoeff(),
+    points->colwise().maxCoeff();
 }
 
 Eigen::MatrixXd BoundingBox::getCorners() {

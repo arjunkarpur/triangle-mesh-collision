@@ -66,7 +66,7 @@ std::vector<std::pair<int, int>>* CollisionDetect::findCollisionCandidates(BVHNo
     // Get bounding box for current triangle
     Eigen::VectorXi currTri = F->row(i);
     Eigen::MatrixXd triPoints = BVHNode::triangleToPoints(V, currTri);
-    BoundingBox currTriBox(triPoints);
+    BoundingBox currTriBox(&triPoints);
     double endBB = std::clock();
     //std::cout << "Get BB: " << (endBB - beginBB)/CLOCKS_PER_SEC << std::endl;
 
