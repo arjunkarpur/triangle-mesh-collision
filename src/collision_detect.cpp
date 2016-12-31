@@ -36,8 +36,18 @@ BVHNode* CollisionDetect::loadMeshToBVH(Eigen::MatrixXd *V, Eigen::MatrixXi *F) 
   for (int i = 0; i < F->rows(); i++) {
       inds.push_back(i);
   }
+
+  // Get points for all triangles
+  std::vector<Eigen::MatrixXd> *allTriPoints =
+    new std::vector<Eigen::MatrixXd>();
+  for (int i = 0; i < F->rows(); i++) {
+    allTriPoints->push_back(
+      BVHNode::triangleToPoints(V, F->row(i))
+    );
+  }
+
   //TODO: bug - creates a node always, not a root in special case when only 1 triangle
-  return new BVHNode(V, F, inds);
+  return new BVHNode(V, F, allTriPoints, inds);
 }
 
 std::vector<std::pair<int, int>>* CollisionDetect::findCollisionCandidates(BVHNode *root, Eigen::MatrixXd *V, Eigen::MatrixXi *F) {

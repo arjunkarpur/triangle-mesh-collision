@@ -3,17 +3,17 @@
 */
 #include "bvh.h"
 
-BVHNode::BVHNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *allF, std::vector<int> triInds) {
+BVHNode::BVHNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *allF, std::vector<Eigen::MatrixXd> *allTriPoints, std::vector<int> triInds) {
   left = nullptr;
   right = nullptr;
-  buildNode(allV, allF, triInds);
+  buildNode(allV, allF, allTriPoints, triInds);
 }
 
 bool sortMinInd(std::pair<double, int> i, std::pair<double, int> j) {
     return (i.first < j.first);
 }
 
-void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *allF, std::vector<int> triInds) {
+void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *allF, std::vector<Eigen::MatrixXd> *allTriPoints, std::vector<int> triInds) {
   double begin = std::clock();
   // If node is a leaf, save triangle/bounding box and exit 
   if (triInds.size() == 1) {
@@ -25,16 +25,8 @@ void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *allF, std::vecto
     return;
   } 
 
-  // Get all points for the given triangles (to be reused later)
-  std::vector<Eigen::MatrixXd> allNodeTriPoints; 
-  for (int i = 0; i < triInds.size(); i++) {
-    allNodeTriPoints.push_back(
-      BVHNode::triangleToPoints(allV, allF->row(triInds.at(i)))
-    );
-  }
-
   // Compute bouding box for triangles (save to instance var)
-  boundingBox = findBoundingBoxSet(allV, &allNodeTriPoints);
+  boundingBox = findBoundingBoxSet(allV, allTriPoints, triInds);
 
   // Determine longest length of bounding box, split into 2
   Eigen::MatrixXd minMax = boundingBox->minMax;
@@ -45,7 +37,15 @@ void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *allF, std::vecto
   std::vector<std::pair<double, int>> minInd;
 
   for (int i = 0; i < triInds.size(); i++) {
-    Eigen::MatrixXd triPoints = allNodeTriPoints.at(i);
+    Eigen::MatrixXd triPoints = 
+      allTriPoints->at(triInds.at(i));
+    /*
+    std::cout << "===" << std::endl;
+    std::cout << tmp << std::endl;
+    std::cout << "---" << std::endl;
+    std::cout << triPoints << std::endl;
+    */
+
     BoundingBox currTriBox(&triPoints);
     // Get the min value to sort on 
     //   (depending on longest dimension of bounding box)
@@ -79,8 +79,8 @@ void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *allF, std::vecto
   ///std::cout << "node constr: " << (end-begin)/CLOCKS_PER_SEC << std::endl;
 
   // Create left and right children
-  left = new BVHNode(allV, allF, firstTriangles);
-  right = new BVHNode(allV, allF, secTriangles);
+  left = new BVHNode(allV, allF, allTriPoints, firstTriangles);
+  right = new BVHNode(allV, allF, allTriPoints, secTriangles);
 
   return;
 }
@@ -94,10 +94,11 @@ Eigen::MatrixXd BVHNode::triangleToPoints(Eigen::MatrixXd *points, Eigen::Vector
   return triPoints;
 }
 
-BoundingBox* BVHNode::findBoundingBoxSet(Eigen::MatrixXd *allV, std::vector<Eigen::MatrixXd> *allTriPoints) {
-  Eigen::MatrixXd points(allTriPoints->size()*3, 3);
-  for (int i = 0; i < allTriPoints->size(); i++) {
-      points.block<3, 3>(i*3, 0) = allTriPoints->at(i);
+//TODO: fix> make 2nd constructor for bounding box
+BoundingBox* BVHNode::findBoundingBoxSet(Eigen::MatrixXd *allV, std::vector<Eigen::MatrixXd> *allTriPoints, std::vector<int> triInds) {
+  Eigen::MatrixXd points(triInds.size()*3, 3);
+  for (int i = 0; i < triInds.size(); i++) {
+      points.block<3, 3>(i*3, 0) = allTriPoints->at(triInds.at(i));
   }
   return (new BoundingBox(&points));
 }
