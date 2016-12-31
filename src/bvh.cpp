@@ -90,11 +90,11 @@ void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *nodeTris) {
 }
 
 Eigen::MatrixXd BVHNode::triangleToPoints(Eigen::MatrixXd *points, Eigen::VectorXi triangle) {
-  Eigen::RowVector3d p1 = points->block<1,3>(triangle(0), 0);
-  Eigen::RowVector3d p2 = points->block<1,3>(triangle(1), 0);
-  Eigen::RowVector3d p3 = points->block<1,3>(triangle(2), 0);
   Eigen::MatrixXd triPoints(3, 3);
-  triPoints << p1, p2, p3;
+  triPoints << 
+    points->block<1,3>(triangle(0),0),
+    points->block<1,3>(triangle(1),0),
+    points->block<1,3>(triangle(2),0);
   return triPoints;
 }
 
