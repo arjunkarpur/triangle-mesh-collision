@@ -1,28 +1,23 @@
 /*
   Implementation fo Bounding Volume Heirarchy (BVH) data struct
 */
-
 #include "bvh.h"
-#include <algorithm>
-#include <assert.h>
-#include <vector>
-#include <iostream>
 
-BVHNode::BVHNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *nodeTris) {
+BVHNode::BVHNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *allF, std::vector<int> triInds) {
   left = nullptr;
   right = nullptr;
-  buildNode(allV, nodeTris);
+  buildNode(allV, allF, triInds);
 }
 
 bool sortMinInd(std::pair<double, int> i, std::pair<double, int> j) {
     return (i.first < j.first);
 }
 
-void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *nodeTris) {
+void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *allF, std::vector<int> triInds) {
   double begin = std::clock();
   // If node is a leaf, save triangle/bounding box and exit 
-  if (nodeTris->rows() == 1) {
-    triangle = nodeTris->row(0);
+  if (triInds.size() == 1) {
+    triangle << allF->row(triInds.at(0)), triInds.at(0);
     Eigen::MatrixXd points = BVHNode::triangleToPoints(allV, triangle);
     boundingBox = new BoundingBox(&points);
     double endLeaf = std::clock();
@@ -31,15 +26,15 @@ void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *nodeTris) {
   } 
 
   // Get all points for the given triangles (to be reused later)
-  std::vector<Eigen::MatrixXd> allTriPoints; 
-  for (int i = 0; i < nodeTris->rows(); i++) {
-    allTriPoints.push_back(
-      BVHNode::triangleToPoints(allV, nodeTris->row(i))
+  std::vector<Eigen::MatrixXd> allNodeTriPoints; 
+  for (int i = 0; i < triInds.size(); i++) {
+    allNodeTriPoints.push_back(
+      BVHNode::triangleToPoints(allV, allF->row(triInds.at(i)))
     );
   }
 
   // Compute bouding box for triangles (save to instance var)
-  boundingBox = findBoundingBoxSet(allV, &allTriPoints);
+  boundingBox = findBoundingBoxSet(allV, &allNodeTriPoints);
 
   // Determine longest length of bounding box, split into 2
   Eigen::MatrixXd minMax = boundingBox->minMax;
@@ -49,8 +44,8 @@ void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *nodeTris) {
   double maxDiff = std::max(xDiff, std::max(yDiff, zDiff));
   std::vector<std::pair<double, int>> minInd;
 
-  for (int i = 0; i < nodeTris->rows(); i++) {
-    Eigen::MatrixXd triPoints = allTriPoints.at(i);
+  for (int i = 0; i < triInds.size(); i++) {
+    Eigen::MatrixXd triPoints = allNodeTriPoints.at(i);
     BoundingBox currTriBox(&triPoints);
     // Get the min value to sort on 
     //   (depending on longest dimension of bounding box)
@@ -65,33 +60,27 @@ void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *nodeTris) {
       // Should never happen! Problem with equality of doubles
       assert(false);
     }
-    minInd.push_back(std::pair<double,int>(minVal, i));
+    minInd.push_back(std::pair<double,int>(minVal, triInds.at(i)));
   }
 
-  // Sort minInd and partition triangles into 2 matrices
+  // Sort minInd and partition triangles into 2 lists of indices
   std::sort(minInd.begin(), minInd.end(), sortMinInd);
   int half = minInd.size()/2;
-  std::vector<std::pair<double, int>> firstSplit(minInd.begin(), minInd.begin()+half);
-  std::vector<std::pair<double, int>> secSplit(minInd.begin()+half, minInd.end());
-
-  // Copy triangles into matrices to send to child nodes
-  Eigen::MatrixXi firstTriangles(firstSplit.size(), 4);
-  Eigen::MatrixXi secTriangles(secSplit.size(), 4);
-  for (int i = 0; i < firstSplit.size(); i++) {
-    firstTriangles.block<1,4>(i,0) = 
-      nodeTris->row(firstSplit[i].second);
+  std::vector<int> firstTriangles;
+  std::vector<int> secTriangles;
+  for (int i = 0; i < half; i++) {
+    firstTriangles.push_back(minInd.at(i).second);
   }
-  for (int i = 0; i < secSplit.size(); i++) {
-    secTriangles.block<1,4>(i,0) = 
-      nodeTris->row(secSplit[i].second);
+  for (int i = half; i < minInd.size(); i++) {
+    secTriangles.push_back(minInd.at(i).second);
   }
 
   double end = std::clock();
   ///std::cout << "node constr: " << (end-begin)/CLOCKS_PER_SEC << std::endl;
 
   // Create left and right children
-  left = new BVHNode(allV, &firstTriangles);
-  right = new BVHNode(allV, &secTriangles);
+  left = new BVHNode(allV, allF, firstTriangles);
+  right = new BVHNode(allV, allF, secTriangles);
 
   return;
 }

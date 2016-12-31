@@ -31,17 +31,13 @@ std::vector<std::pair<int, int>> CollisionDetect::findCollisions(Eigen::MatrixXd
 
 BVHNode* CollisionDetect::loadMeshToBVH(Eigen::MatrixXd *V, Eigen::MatrixXi *F) {
 
-  // Get list of indices for triangles and append to triangle data
-  Eigen::VectorXi indices(F->rows());
+  // Get list of indices for all triangles
+  std::vector<int> inds;
   for (int i = 0; i < F->rows(); i++) {
-      indices[i] = i;
+      inds.push_back(i);
   }
-  Eigen::MatrixXi indexF(F->rows(), F->cols() + 1);
-  indexF << *F, indices;
-
   //TODO: bug - creates a node always, not a root in special case when only 1 triangle
-  BVHNode *root = new BVHNode(V, &indexF);
-  return root;
+  return new BVHNode(V, F, inds);
 }
 
 std::vector<std::pair<int, int>>* CollisionDetect::findCollisionCandidates(BVHNode *root, Eigen::MatrixXd *V, Eigen::MatrixXi *F) {

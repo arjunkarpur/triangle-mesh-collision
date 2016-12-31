@@ -4,6 +4,10 @@
 #include <Eigen/Core>
 #include "bounding_box.h"
 #include <queue>
+#include <algorithm>
+#include <assert.h>
+#include <vector>
+#include <iostream>
 
 /* 
   Declaration of Bounding Volume Heirarchy (BVH) data struct
@@ -16,14 +20,14 @@ class BVHNode {
     Eigen::RowVector4i triangle;
     BoundingBox *boundingBox;
 
-    BVHNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *nodeTris);
+    BVHNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *allF, std::vector<int> triInds);
     ~BVHNode() {};
     bool isLeaf() { return (left == nullptr && right == nullptr); };
     void inspectTree();
     static Eigen::MatrixXd triangleToPoints(Eigen::MatrixXd *points, Eigen::VectorXi triangle);
 
   private:
-    void buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *nodeTris);
+    void buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *allF, std::vector<int> triInds);
     BoundingBox* findBoundingBoxSet(Eigen::MatrixXd *allV, std::vector<Eigen::MatrixXd> *allTriPoints);
 };
 
