@@ -44,20 +44,19 @@ void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *nodeTris) {
   double maxDiff = std::max(xDiff, std::max(yDiff, zDiff));
   std::vector<std::pair<double, int>> minInd;
 
-
   for (int i = 0; i < nodeTris->rows(); i++) {
     Eigen::MatrixXd triPoints = BVHNode::triangleToPoints(allV, nodeTris->row(i));
-    BoundingBox *currTriBox= new BoundingBox(&triPoints);
+    BoundingBox currTriBox(&triPoints);
 
     // Get the min value to sort on 
     //   (depending on longest dimension of bounding box)
     double minVal = 0;
     if (maxDiff == xDiff) { //minX
-      minVal = (currTriBox->minMax)(0,0);
+      minVal = (currTriBox.minMax)(0,0);
     } else if (maxDiff == yDiff) { //minY
-      minVal = (currTriBox->minMax)(0,1);
+      minVal = (currTriBox.minMax)(0,1);
     } else if (maxDiff == zDiff) { //minZ
-      minVal = (currTriBox->minMax)(0,2);
+      minVal = (currTriBox.minMax)(0,2);
     } else {
       // Should never happen! Problem with equality of doubles
       assert(false);
