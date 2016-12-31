@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <igl/readPLY.h>
+#include "bvh.h"
 
 TriangleMesh getTriangleMesh(std::string file) {
   // Inline mesh of a cube
@@ -40,6 +41,35 @@ void plot_mesh(TriangleMesh mesh) {
   viewer.launch();
 }
 
+void visualizeCollisions(TriangleMesh *mesh, std::vector<std::pair<int,int>> collisions) {
+    
+  for (int i =0; i < collisions.size(); i++) {
+    std::cout << "------" << std::endl;
+    std::cout << "Collision " << i << "/" << collisions.size() << std::endl;
+    int tri1 = collisions.at(i).first;
+    int tri2 = collisions.at(i).second;
+    std::cout << "TRI INDS: " << tri1 << " " << tri2 << std::endl;
+
+    Eigen::MatrixXd points1 = 
+      BVHNode::triangleToPoints(&(mesh->V), mesh->F.row(tri1));
+
+    Eigen::MatrixXd points2 = 
+      BVHNode::triangleToPoints(&(mesh->V), mesh->F.row(tri2));
+
+    Eigen::MatrixXd intersectV(6, 3);
+    intersectV << points1, points2;
+    Eigen::MatrixXi intersectF = (Eigen::MatrixXi(2,3) <<
+      0, 1, 2,
+      3, 4, 5
+    ).finished();
+    TriangleMesh m;
+    m.V = intersectV;
+    m.F = intersectF;
+    plot_mesh(m);
+  }
+}
+
+
 int main(int argc, char *argv[])
 {
   
@@ -56,7 +86,8 @@ int main(int argc, char *argv[])
   std::vector<std::pair<int, int>> collisions = 
     cd->findCollisions(mesh.V, mesh.F);
   std::cout << "COLLISIONS: " << collisions.size() << std::endl;
-
-  // Plot the mesh
+  
+  // Plot the mesh and show collisions
   plot_mesh(mesh);
+  visualizeCollisions(&mesh, collisions);
 }
