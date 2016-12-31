@@ -28,12 +28,18 @@ void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *nodeTris) {
     double endLeaf = std::clock();
     //std::cout << "leaf constr: " << (endLeaf-begin)/CLOCKS_PER_SEC << std::endl;
     return;
-  } else {
-    triangle = Eigen::RowVector4i(-1, -1, -1, -1);
+  } 
+
+  // Get all points for the given triangles (to be reused later)
+  std::vector<Eigen::MatrixXd> allTriPoints; 
+  for (int i = 0; i < nodeTris->rows(); i++) {
+    allTriPoints.push_back(
+      BVHNode::triangleToPoints(allV, nodeTris->row(i))
+    );
   }
 
   // Compute bouding box for triangles (save to instance var)
-  boundingBox = findBoundingBoxSet(allV, nodeTris);
+  boundingBox = findBoundingBoxSet(allV, &allTriPoints);
 
   // Determine longest length of bounding box, split into 2
   Eigen::MatrixXd minMax = boundingBox->minMax;
@@ -45,7 +51,7 @@ void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *nodeTris) {
   std::vector<std::pair<double, int>> minInd;
 
   for (int i = 0; i < nodeTris->rows(); i++) {
-    Eigen::MatrixXd triPoints = BVHNode::triangleToPoints(allV, nodeTris->row(i));
+    Eigen::MatrixXd triPoints = allTriPoints.at(i);
     BoundingBox currTriBox(&triPoints);
 
     // Get the min value to sort on 
@@ -103,10 +109,10 @@ Eigen::MatrixXd BVHNode::triangleToPoints(Eigen::MatrixXd *points, Eigen::Vector
   return triPoints;
 }
 
-BoundingBox* BVHNode::findBoundingBoxSet(Eigen::MatrixXd *allV, Eigen::MatrixXi *triangles) {
-  Eigen::MatrixXd points(triangles->rows()*3, 3);
-  for (int i = 0; i < triangles->rows(); i++) {
-      points.block<3, 3>(i*3, 0) = BVHNode::triangleToPoints(allV, triangles->row(i));
+BoundingBox* BVHNode::findBoundingBoxSet(Eigen::MatrixXd *allV, std::vector<Eigen::MatrixXd> *allTriPoints) {
+  Eigen::MatrixXd points(allTriPoints->size()*3, 3);
+  for (int i = 0; i < allTriPoints->size(); i++) {
+      points.block<3, 3>(i*3, 0) = allTriPoints->at(i);
   }
   return (new BoundingBox(&points));
 }

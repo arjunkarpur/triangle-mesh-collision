@@ -24,7 +24,7 @@ class BVHNode {
 
   private:
     void buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *nodeTris);
-    BoundingBox* findBoundingBoxSet(Eigen::MatrixXd *allV, Eigen::MatrixXi *triangles);
+    BoundingBox* findBoundingBoxSet(Eigen::MatrixXd *allV, std::vector<Eigen::MatrixXd> *allTriPoints);
 };
 
 #endif
