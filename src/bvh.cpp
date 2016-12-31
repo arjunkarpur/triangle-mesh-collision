@@ -40,8 +40,9 @@ void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *nodeTris) {
   double zDiff = minMax(1,2) - minMax(0,2);
   double maxDiff = std::max(xDiff, std::max(yDiff, zDiff));
   std::vector<std::pair<double, int>> minInd;
+
+
   for (int i = 0; i < nodeTris->rows(); i++) {
-    
     BoundingBox *currTriBox= 
       new BoundingBox(BVHNode::triangleToPoints(allV, nodeTris->row(i)));
 

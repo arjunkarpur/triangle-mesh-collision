@@ -88,6 +88,6 @@ int main(int argc, char *argv[])
   std::cout << "COLLISIONS: " << collisions.size() << std::endl;
   
   // Plot the mesh and show collisions
-  plot_mesh(mesh);
-  visualizeCollisions(&mesh, collisions);
+  //plot_mesh(mesh);
+  //visualizeCollisions(&mesh, collisions);
 }

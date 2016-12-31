@@ -2,18 +2,29 @@
 
 std::vector<std::pair<int, int>> CollisionDetect::findCollisions(Eigen::MatrixXd *V, Eigen::MatrixXi *F) {
 
+  std::cout << "start" << std::endl;
+  double begin = std::clock();
   // Construct the BVH data structure
   BVHNode *root = loadMeshToBVH(V, F);
+  std::cout << "Tree construction: " << (std::clock() - begin) / CLOCKS_PER_SEC << std::endl;
+
   //root->inspectTree(); 
+
     
+  begin = std::clock();
   // Find collision candidates using BVH
   std::vector<std::pair<int, int>> *candidates = 
     findCollisionCandidates(root, V, F);
   std::cout << "CANDIDATES: " << candidates->size() << std::endl;
 
+  std::cout << "Finding candidates: " << (std::clock() - begin) / CLOCKS_PER_SEC << std::endl;
+
+  begin = std::clock();
   // Inspect candidates further and find all collisions
   std::vector<std::pair<int, int>> *collisions = 
     findCollisionsFromCandidates(candidates, V, F);
+
+  std::cout << "Finding collisions: " << (std::clock() - begin) / CLOCKS_PER_SEC << std::endl;
 
   return *collisions;
 }
@@ -43,24 +54,36 @@ std::vector<std::pair<int, int>>* CollisionDetect::findCollisionCandidates(BVHNo
   //Eigen::MatrixXd *V = root->allV;
 
   // Find candidates for each triangle in mesh
+  std::cout << "start" << std::endl;
+  double begin = std::clock();
+
+  double avgProcess = 0;
+  std::queue<BVHNode*> intersectQueue;
   for (int i = 0; i < F->rows(); i++) {
+
+    double beginBB = std::clock();
 
     // Get bounding box for current triangle
     Eigen::VectorXi currTri = F->row(i);
     Eigen::MatrixXd triPoints = BVHNode::triangleToPoints(V, currTri);
-    BoundingBox *currTriBox = new BoundingBox(triPoints);
+    BoundingBox currTriBox(triPoints);
+    double endBB = std::clock();
+    std::cout << "Get BB: " << (endBB - beginBB)/CLOCKS_PER_SEC << std::endl;
 
     // Find collision candidates by crawling tree
-    std::queue<BVHNode*> *intersectQueue = new std::queue<BVHNode*>();
-    intersectQueue->push(root);
-    while (!intersectQueue->empty()) {
+    double beginTree = std::clock();
+    intersectQueue.push(root);
+    int count = 0;
+    double collisionCheckTime = 0;
+    int collisionChecks = 0;
+    while (!intersectQueue.empty()) {
       // Get first element
-      BVHNode *curr = intersectQueue->front();
-      intersectQueue->pop();
+      count += 1;
+      BVHNode *curr = intersectQueue.front();
+      intersectQueue.pop();
 
       // Check if leaf. Add as candidate (if valid)
       if (curr->isLeaf()) {
-
         // Get triangle candidate
         Eigen::Vector4i otherTri = curr->triangle;
         int otherInd = otherTri(3);
@@ -79,14 +102,31 @@ std::vector<std::pair<int, int>>* CollisionDetect::findCollisionCandidates(BVHNo
       // If not leaf, check if curr triangle intersects with left/right child and crawl as necessary
       BVHNode* currLeft = curr->left;
       BVHNode* currRight= curr->right;
-      if (currTriBox->intersectsWith(currLeft->boundingBox)) {
-        intersectQueue->push(currLeft);
+      double collision = std::clock();
+      if (currTriBox.intersectsWith(currLeft->boundingBox)) {
+        intersectQueue.push(currLeft);
       }
-      if (currTriBox->intersectsWith(currRight->boundingBox)) {
-        intersectQueue->push(currRight);
+      if (currTriBox.intersectsWith(currRight->boundingBox)) {
+        intersectQueue.push(currRight);
       }
+      double cEnd = std::clock();
+      collisionCheckTime += (cEnd-collision);
+      collisionChecks += 1;
     }
+    double endTree = std::clock();
+    std::cout << "Collision_checks: " << (collisionCheckTime)/CLOCKS_PER_SEC << std::endl;
+    std::cout << "num Collision_checks: " << collisionChecks << std::endl;
+    std::cout << "Get tree: " << (endTree - beginTree)/CLOCKS_PER_SEC << std::endl;
+
+
+    avgProcess += count;
   }
+
+  std::cout << "end" << std::endl;
+  double end = std::clock();
+  std::cout << "Per tri candidate time: " << ((end-begin)/CLOCKS_PER_SEC)/F->rows() << std::endl;
+  std::cout << "nodes processed per triangle: " << avgProcess/F->rows() << std::endl;
+
   return candidates; 
 }
 
