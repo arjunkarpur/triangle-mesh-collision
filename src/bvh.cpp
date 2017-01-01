@@ -26,7 +26,7 @@ void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *allF, std::vecto
   } 
 
   // Compute bouding box for triangles (save to instance var)
-  boundingBox = findBoundingBoxSet(allV, allTriPoints, triInds);
+  boundingBox = findBoundingBoxSet(allTriPoints, triInds);
 
   // Determine longest length of bounding box, split into 2
   Eigen::MatrixXd minMax = boundingBox->minMax;
@@ -95,7 +95,7 @@ Eigen::MatrixXd BVHNode::triangleToPoints(Eigen::MatrixXd *points, Eigen::Vector
 }
 
 //TODO: fix> make 2nd constructor for bounding box
-BoundingBox* BVHNode::findBoundingBoxSet(Eigen::MatrixXd *allV, std::vector<Eigen::MatrixXd> *allTriPoints, std::vector<int> triInds) {
+BoundingBox* BVHNode::findBoundingBoxSet(std::vector<Eigen::MatrixXd> *allTriPoints, std::vector<int> triInds) {
   Eigen::MatrixXd points(triInds.size()*3, 3);
   for (int i = 0; i < triInds.size(); i++) {
       points.block<3, 3>(i*3, 0) = allTriPoints->at(triInds.at(i));
