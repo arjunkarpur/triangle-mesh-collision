@@ -150,11 +150,11 @@ std::vector<std::pair<int, int>>* CollisionDetect::findCollisionsFromCandidates(
   for (int i = 0; i < candidates->size(); i++) {
 
     // Check if true collision
-    std::pair<int, int> curr = candidates->at(i);
+    //std::pair<int, int> curr = candidates->at(i);
     if (trianglesIntersect(
-          allTriPoints->at(curr.first),
-          allTriPoints->at(curr.second))) {
-      collisions->push_back(curr);
+          allTriPoints->at(candidates->at(i).first),
+          allTriPoints->at(candidates->at(i).second))) {
+      collisions->push_back(candidates->at(i));
     }
   }
   return collisions;
