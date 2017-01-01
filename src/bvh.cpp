@@ -18,8 +18,9 @@ void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *allF, std::vecto
   // If node is a leaf, save triangle/bounding box and exit 
   if (triInds.size() == 1) {
     triangle << allF->row(triInds.at(0)), triInds.at(0);
-    Eigen::MatrixXd points = BVHNode::triangleToPoints(allV, triangle);
-    boundingBox = new BoundingBox(&points);
+    boundingBox = new BoundingBox(
+      &(allTriPoints->at(triInds.at(0)))
+    );
     double endLeaf = std::clock();
     //std::cout << "leaf constr: " << (endLeaf-begin)/CLOCKS_PER_SEC << std::endl;
     return;
@@ -34,18 +35,12 @@ void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *allF, std::vecto
   double yDiff = minMax(1,1) - minMax(0,1);
   double zDiff = minMax(1,2) - minMax(0,2);
   double maxDiff = std::max(xDiff, std::max(yDiff, zDiff));
-  std::vector<std::pair<double, int>> minInd;
 
+  std::vector<std::pair<double, int>> minInd;
   for (int i = 0; i < triInds.size(); i++) {
     Eigen::MatrixXd triPoints = 
       allTriPoints->at(triInds.at(i));
-    /*
-    std::cout << "===" << std::endl;
-    std::cout << tmp << std::endl;
-    std::cout << "---" << std::endl;
-    std::cout << triPoints << std::endl;
-    */
-
+    
     BoundingBox currTriBox(&triPoints);
     // Get the min value to sort on 
     //   (depending on longest dimension of bounding box)
@@ -94,7 +89,7 @@ Eigen::MatrixXd BVHNode::triangleToPoints(Eigen::MatrixXd *points, Eigen::Vector
   return triPoints;
 }
 
-//TODO: fix> make 2nd constructor for bounding box
+//TODO: find way to speed this up. shouldn't have to make copy
 BoundingBox* BVHNode::findBoundingBoxSet(std::vector<Eigen::MatrixXd> *allTriPoints, std::vector<int> triInds) {
   Eigen::MatrixXd points(triInds.size()*3, 3);
   for (int i = 0; i < triInds.size(); i++) {
@@ -142,17 +137,3 @@ void BVHNode::inspectTree() {
     }
   }
 }
-
-
-/*
-    how to construct bvt:
-
-- for each node (given a set of triangles):
-    - check if leaf
-    - construct bounding box. save
-    - find longest length
-    - divide bounding box by 2
-    - partition triangles from set into the 2 regions
-        - for each triangle in set, create bounding box and check collision with both
-    - set left, right = recursive call
-*/

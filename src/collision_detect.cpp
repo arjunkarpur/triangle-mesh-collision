@@ -55,7 +55,6 @@ BVHNode* CollisionDetect::loadMeshToBVH(Eigen::MatrixXd *V, Eigen::MatrixXi *F, 
   for (int i = 0; i < F->rows(); i++) {
       inds.push_back(i);
   }
-
   
   //TODO: bug - creates a node always, not a root in special case when only 1 triangle
   return new BVHNode(V, F, allTriPoints, inds);
@@ -152,8 +151,8 @@ std::vector<std::pair<int, int>>* CollisionDetect::findCollisionsFromCandidates(
     // Check if true collision
     //std::pair<int, int> curr = candidates->at(i);
     if (trianglesIntersect(
-          allTriPoints->at(candidates->at(i).first),
-          allTriPoints->at(candidates->at(i).second))) {
+          &(allTriPoints->at(candidates->at(i).first)),
+          &(allTriPoints->at(candidates->at(i).second)))) {
       collisions->push_back(candidates->at(i));
     }
   }
@@ -163,13 +162,13 @@ std::vector<std::pair<int, int>>* CollisionDetect::findCollisionsFromCandidates(
 bool CollisionDetect::triNeighbors(int indOne, int indTwo, std::vector<Eigen::MatrixXd> *allTriPoints) {
 
   // Returns true iff triangles share at least 1 point
-  Eigen::MatrixXd triOnePoints = allTriPoints->at(indOne);
-  Eigen::MatrixXd triTwoPoints = allTriPoints->at(indTwo);
+  Eigen::MatrixXd *triOnePoints = &(allTriPoints->at(indOne));
+  Eigen::MatrixXd *triTwoPoints = &(allTriPoints->at(indTwo));
 
   // Check every pair of points for equality
-  for (int i = 0; i < triOnePoints.rows(); i++) {
-    for (int j = 0; j < triTwoPoints.rows(); j++) {
-      if (triOnePoints.row(i).isApprox(triTwoPoints.row(j))) {
+  for (int i = 0; i < triOnePoints->rows(); i++) {
+    for (int j = 0; j < triTwoPoints->rows(); j++) {
+      if (triOnePoints->row(i).isApprox(triTwoPoints->row(j))) {
         return true;
       }
     }
@@ -177,17 +176,17 @@ bool CollisionDetect::triNeighbors(int indOne, int indTwo, std::vector<Eigen::Ma
   return false;
 }
 
-bool CollisionDetect::trianglesIntersect(Eigen::MatrixXd pointsOne, Eigen::MatrixXd pointsTwo) {
+bool CollisionDetect::trianglesIntersect(Eigen::MatrixXd *pointsOne, Eigen::MatrixXd *pointsTwo) {
 
   // Pull out triangle 1's vertices into vectors
-  Eigen::Vector3d t1Zero = pointsOne.row(0);
-  Eigen::Vector3d t1One = pointsOne.row(1);
-  Eigen::Vector3d t1Two = pointsOne.row(2);
+  Eigen::Vector3d t1Zero = pointsOne->row(0);
+  Eigen::Vector3d t1One = pointsOne->row(1);
+  Eigen::Vector3d t1Two = pointsOne->row(2);
 
   // Pull out triangle 2's vertices into vectors
-  Eigen::Vector3d t2Zero = pointsTwo.row(0);
-  Eigen::Vector3d t2One = pointsTwo.row(1);
-  Eigen::Vector3d t2Two = pointsTwo.row(2);
+  Eigen::Vector3d t2Zero = pointsTwo->row(0);
+  Eigen::Vector3d t2One = pointsTwo->row(1);
+  Eigen::Vector3d t2Two = pointsTwo->row(2);
 
   // Check triangle 1's edges onto triangle 2
   if (edgeTriangleIntersect(t1Zero, t1One, pointsTwo) ||
@@ -212,7 +211,7 @@ bool isApprox(double val, double target) {
   return ( std::abs(val-target) < epsilon );
 }
 
-bool CollisionDetect::edgeTriangleIntersect(Eigen::Vector3d v0, Eigen::Vector3d v1, Eigen::MatrixXd trianglePoints) {
+bool CollisionDetect::edgeTriangleIntersect(Eigen::Vector3d v0, Eigen::Vector3d v1, Eigen::MatrixXd *trianglePoints) {
 
   /*
     Parametric form of line:
@@ -229,14 +228,13 @@ bool CollisionDetect::edgeTriangleIntersect(Eigen::Vector3d v0, Eigen::Vector3d 
   */
 
   // Put triangle points into vectors
-  Eigen::Vector3d t0 = trianglePoints.row(0);
-  Eigen::Vector3d t1 = trianglePoints.row(1);
-  Eigen::Vector3d t2 = trianglePoints.row(2);
+  Eigen::Vector3d t0 = trianglePoints->row(0);
+  Eigen::Vector3d t1 = trianglePoints->row(1);
+  Eigen::Vector3d t2 = trianglePoints->row(2);
 
   // Check if line segment and plane triangle lies in are parallel
   Eigen::VectorXd triPlaneNormal = (t1 - t0).cross(t2-t0);
-  Eigen::VectorXd lineVector = (v1 - v0);
-  bool parallel = isApprox(triPlaneNormal.dot(lineVector), 0);
+  bool parallel = isApprox(triPlaneNormal.dot(v1-v0), 0);
   if (parallel) {
     //TODO: check if v0 or v1 are in plane (segment inside tri)
     //  right now, assumes not

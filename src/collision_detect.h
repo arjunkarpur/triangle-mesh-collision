@@ -21,8 +21,8 @@ class CollisionDetect{
     std::vector<std::pair<int, int>>* findCollisionCandidates(BVHNode* root, Eigen::MatrixXd *V, Eigen::MatrixXi *F, std::vector<Eigen::MatrixXd> *allTriPoints);
     std::vector<std::pair<int, int>>* findCollisionsFromCandidates(std::vector<std::pair<int, int>>* candidates, Eigen::MatrixXd *V, Eigen::MatrixXi *F, std::vector<Eigen::MatrixXd> *allTriPoints);
     bool triNeighbors(int indOne, int indTwo, std::vector<Eigen::MatrixXd> *allTriPoints);
-    bool trianglesIntersect(Eigen::MatrixXd pointsOne, Eigen::MatrixXd pointsTwo);
-    bool edgeTriangleIntersect(Eigen::Vector3d v0, Eigen::Vector3d v1, Eigen::MatrixXd trianglePoints);
+    bool trianglesIntersect(Eigen::MatrixXd *pointsOne, Eigen::MatrixXd *pointsTwo);
+    bool edgeTriangleIntersect(Eigen::Vector3d v0, Eigen::Vector3d v1, Eigen::MatrixXd *trianglePoints);
 };
 
 #endif
