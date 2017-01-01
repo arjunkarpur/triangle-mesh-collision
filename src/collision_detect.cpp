@@ -38,7 +38,8 @@ std::vector<Eigen::MatrixXd>* CollisionDetect::getAllTrianglePoints(Eigen::Matri
   // Get points for all triangles
   std::vector<Eigen::MatrixXd> *allTriPoints =
     new std::vector<Eigen::MatrixXd>();
-  for (int i = 0; i < F->rows(); i++) {
+  int rows = F->rows();
+  for (int i = 0; i < rows; i++) {
     allTriPoints->push_back(
       BVHNode::triangleToPoints(V, F->row(i))
     );
@@ -52,7 +53,8 @@ BVHNode* CollisionDetect::loadMeshToBVH(Eigen::MatrixXd *V, Eigen::MatrixXi *F, 
 
   // Get list of indices for all triangles
   std::vector<int> inds;
-  for (int i = 0; i < F->rows(); i++) {
+  int rows = F->rows();
+  for (int i = 0; i < rows; i++) {
       inds.push_back(i);
   }
   
@@ -72,7 +74,8 @@ std::vector<std::pair<int, int>>* CollisionDetect::findCollisionCandidates(BVHNo
 
   double avgProcess = 0;
   std::queue<BVHNode*> intersectQueue;
-  for (int i = 0; i < F->rows(); i++) {
+  int rows = F->rows();
+  for (int i = 0; i < rows; i++) {
 
     double beginBB = std::clock();
 
@@ -146,7 +149,8 @@ std::vector<std::pair<int, int>>* CollisionDetect::findCollisionsFromCandidates(
   std::vector<std::pair<int, int>> *collisions = 
     new std::vector<std::pair<int, int>>();
 
-  for (int i = 0; i < candidates->size(); i++) {
+  int size = candidates->size();
+  for (int i = 0; i < size; i++) {
 
     // Check if true collision
     //std::pair<int, int> curr = candidates->at(i);
@@ -166,8 +170,10 @@ bool CollisionDetect::triNeighbors(int indOne, int indTwo, std::vector<Eigen::Ma
   Eigen::MatrixXd *triTwoPoints = &(allTriPoints->at(indTwo));
 
   // Check every pair of points for equality
-  for (int i = 0; i < triOnePoints->rows(); i++) {
-    for (int j = 0; j < triTwoPoints->rows(); j++) {
+  int oneRows = triOnePoints->rows();
+  int twoRows = triTwoPoints->rows();
+  for (int i = 0; i < oneRows; i++) {
+    for (int j = 0; j < twoRows; j++) {
       if (triOnePoints->row(i).isApprox(triTwoPoints->row(j))) {
         return true;
       }
