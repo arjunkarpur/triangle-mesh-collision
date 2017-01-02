@@ -6,15 +6,15 @@
 #include <igl/readPLY.h>
 #include "bvh.h"
 
+bool VISUALIZATION = true;
+
 TriangleMesh getTriangleMesh(std::string file) {
-  // Inline mesh of a cube
 
   Eigen::MatrixXd V;
   Eigen::MatrixXi F;
 
   std::string fileExt = file.substr(file.find_last_of(".") + 1);
   std::string meshFilepath = "../meshes/" + file;
-
   if (fileExt == "off") {
     igl::readOFF(meshFilepath,V,F);
   } else if (fileExt == "ply") {
@@ -88,6 +88,8 @@ int main(int argc, char *argv[])
   std::cout << "COLLISIONS: " << collisions.size() << std::endl;
   
   // Plot the mesh and show collisions
-  //plot_mesh(mesh);
-  //visualizeCollisions(&mesh, collisions);
+  if (VISUALIZATION) {
+    plot_mesh(mesh);
+    visualizeCollisions(&mesh, collisions);
+  }
 }

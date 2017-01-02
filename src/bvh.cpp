@@ -14,15 +14,12 @@ bool sortMinInd(std::pair<double, int> i, std::pair<double, int> j) {
 }
 
 void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *allF, std::vector<Eigen::MatrixXd> *allTriPoints, std::vector<int> triInds) {
-  double begin = std::clock();
   // If node is a leaf, save triangle/bounding box and exit 
   if (triInds.size() == 1) {
     triangle << allF->row(triInds.at(0)), triInds.at(0);
     boundingBox = new BoundingBox(
       &(allTriPoints->at(triInds.at(0)))
     );
-    double endLeaf = std::clock();
-    //std::cout << "leaf constr: " << (endLeaf-begin)/CLOCKS_PER_SEC << std::endl;
     return;
   } 
 
@@ -70,9 +67,6 @@ void BVHNode::buildNode(Eigen::MatrixXd *allV, Eigen::MatrixXi *allF, std::vecto
     secTriangles.push_back(minInd.at(i).second);
   }
 
-  double end = std::clock();
-  ///std::cout << "node constr: " << (end-begin)/CLOCKS_PER_SEC << std::endl;
-
   // Create left and right children
   left = new BVHNode(allV, allF, allTriPoints, firstTriangles);
   right = new BVHNode(allV, allF, allTriPoints, secTriangles);
@@ -89,7 +83,8 @@ Eigen::MatrixXd BVHNode::triangleToPoints(Eigen::MatrixXd *points, Eigen::Vector
   return triPoints;
 }
 
-//TODO: find way to speed this up. shouldn't have to make copy
+//TODO: find way to speed this up. 
+//  making copy of points slows it down like crazy. also points may be repeated
 BoundingBox* BVHNode::findBoundingBoxSet(std::vector<Eigen::MatrixXd> *allTriPoints, std::vector<int> triInds) {
   Eigen::MatrixXd points(triInds.size()*3, 3);
   for (int i = 0; i < triInds.size(); i++) {

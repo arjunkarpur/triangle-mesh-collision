@@ -1,34 +1,33 @@
 #include "collision_detect.h"
 
+bool TIMING = false;
+bool INSPECT_TREE = false;
+
 std::vector<std::pair<int, int>> CollisionDetect::findCollisions(Eigen::MatrixXd *V, Eigen::MatrixXi *F) {
 
+  double begin = 0; // for timer
 
   // Get all triangles points from V/F
   std::vector<Eigen::MatrixXd> *allTriPoints =
     getAllTrianglePoints(V, F);
 
-  std::cout << "start" << std::endl;
-  double begin = std::clock();
   // Construct the BVH data structure
+  if (TIMING) begin = std::clock();
   BVHNode *root = loadMeshToBVH(V, F, allTriPoints);
-  std::cout << "Tree construction: " << (std::clock() - begin) / CLOCKS_PER_SEC << std::endl;
+  if (INSPECT_TREE) root->inspectTree(); 
+  if(TIMING) std::cout << "Tree construction: " << (std::clock() - begin) / CLOCKS_PER_SEC << " sec" << std::endl;
 
-  //root->inspectTree(); 
-    
-  begin = std::clock();
   // Find collision candidates using BVH
+  if(TIMING) begin = std::clock();
   std::vector<std::pair<int, int>> *candidates = 
     findCollisionCandidates(root, V, F, allTriPoints);
-  std::cout << "CANDIDATES: " << candidates->size() << std::endl;
+  if(TIMING) std::cout << "Finding candidates: " << (std::clock() - begin) / CLOCKS_PER_SEC << " sec" << std::endl;
 
-  std::cout << "Finding candidates: " << (std::clock() - begin) / CLOCKS_PER_SEC << std::endl;
-
-  begin = std::clock();
   // Inspect candidates further and find all collisions
+  if(TIMING) begin = std::clock();
   std::vector<std::pair<int, int>> *collisions = 
     findCollisionsFromCandidates(candidates, V, F, allTriPoints);
-
-  std::cout << "Finding collisions: " << (std::clock() - begin) / CLOCKS_PER_SEC << std::endl;
+  if(TIMING) std::cout << "Finding collisions: " << (std::clock() - begin) / CLOCKS_PER_SEC << " sec" << std::endl;
 
   return *collisions;
 }
@@ -44,7 +43,6 @@ std::vector<Eigen::MatrixXd>* CollisionDetect::getAllTrianglePoints(Eigen::Matri
       BVHNode::triangleToPoints(V, F->row(i))
     );
   }
-
   return allTriPoints;
 }
 
@@ -57,8 +55,6 @@ BVHNode* CollisionDetect::loadMeshToBVH(Eigen::MatrixXd *V, Eigen::MatrixXi *F, 
   for (int i = 0; i < rows; i++) {
       inds.push_back(i);
   }
-  
-  //TODO: bug - creates a node always, not a root in special case when only 1 triangle
   return new BVHNode(V, F, allTriPoints, inds);
 }
 
@@ -69,44 +65,30 @@ std::vector<std::pair<int, int>>* CollisionDetect::findCollisionCandidates(BVHNo
     new std::vector<std::pair<int, int>>();
 
   // Find candidates for each triangle in mesh
-  std::cout << "start" << std::endl;
-  double begin = std::clock();
-
-  double avgProcess = 0;
   std::queue<BVHNode*> intersectQueue;
   int rows = F->rows();
   for (int i = 0; i < rows; i++) {
 
-    double beginBB = std::clock();
-
     // Get bounding box for current triangle
     BoundingBox currTriBox(&(allTriPoints->at(i)));
-    double endBB = std::clock();
-    //std::cout << "Get BB: " << (endBB - beginBB)/CLOCKS_PER_SEC << std::endl;
 
     // Find collision candidates by crawling tree
-    double beginTree = std::clock();
     intersectQueue.push(root);
-    int count = 0;
-    double collisionCheckTime = 0;
-    int collisionChecks = 0;
     while (!intersectQueue.empty()) {
       // Get first element
-      count += 1;
       BVHNode *curr = intersectQueue.front();
       intersectQueue.pop();
 
       // Check if leaf. Add as candidate (if valid)
       if (curr->isLeaf()) {
-        // Get triangle candidate
-        int otherInd = (curr->triangle)(3);
+        int otherTriInd = (curr->triangle)(3);
 
-        // Check if ind of otherInd > mine. Prevents candidates dupes
-        if (otherInd > i) {
+        // Check if ind of other triangle's index > mine. Prevents candidates dupes
+        if (otherTriInd > i) {
           // Make sure triangles aren't neighbors (share vert)
-          if (!triNeighbors(i, otherInd, allTriPoints)) {
+          if (!triNeighbors(i, otherTriInd, allTriPoints)) {
             // Add triangle indices to candidates list
-            candidates->push_back(std::pair<int, int>(i, otherInd));
+            candidates->push_back(std::pair<int, int>(i, otherTriInd));
           }
         }
         continue;
@@ -115,31 +97,14 @@ std::vector<std::pair<int, int>>* CollisionDetect::findCollisionCandidates(BVHNo
       // If not leaf, check if curr triangle intersects with left/right child and crawl as necessary
       BVHNode* currLeft = curr->left;
       BVHNode* currRight= curr->right;
-      double collision = std::clock();
       if (currTriBox.intersectsWith(currLeft->boundingBox)) {
         intersectQueue.push(currLeft);
       }
       if (currTriBox.intersectsWith(currRight->boundingBox)) {
         intersectQueue.push(currRight);
       }
-      double cEnd = std::clock();
-      collisionCheckTime += (cEnd-collision);
-      collisionChecks += 1;
     }
-    double endTree = std::clock();
-    //std::cout << "Collision_checks: " << (collisionCheckTime)/CLOCKS_PER_SEC << std::endl;
-    //std::cout << "num Collision_checks: " << collisionChecks << std::endl;
-    //std::cout << "Get tree: " << (endTree - beginTree)/CLOCKS_PER_SEC << std::endl;
-
-
-    avgProcess += count;
   }
-
-  std::cout << "end" << std::endl;
-  double end = std::clock();
-  std::cout << "Per tri candidate time: " << ((end-begin)/CLOCKS_PER_SEC)/F->rows() << std::endl;
-  std::cout << "nodes processed per triangle: " << avgProcess/F->rows() << std::endl;
-
   return candidates; 
 }
 
@@ -149,10 +114,9 @@ std::vector<std::pair<int, int>>* CollisionDetect::findCollisionsFromCandidates(
   std::vector<std::pair<int, int>> *collisions = 
     new std::vector<std::pair<int, int>>();
 
+  // Check if true collision for each candidate pair
   int size = candidates->size();
   for (int i = 0; i < size; i++) {
-
-    // Check if true collision
     if (trianglesIntersect(
           &(allTriPoints->at(candidates->at(i).first)),
           &(allTriPoints->at(candidates->at(i).second)))) {
@@ -270,7 +234,7 @@ bool CollisionDetect::edgeTriangleIntersect(Eigen::Vector3d v0, Eigen::Vector3d 
     if (u >= 0 && u <= 1 &&
         v >= 0 && v <= 1 &&
         u + v <= 1) {
-      // If true, intersection inside triangle
+      // If true, intersection occurs inside triangle
       return true;
     }
   }
