@@ -153,7 +153,6 @@ std::vector<std::pair<int, int>>* CollisionDetect::findCollisionsFromCandidates(
   for (int i = 0; i < size; i++) {
 
     // Check if true collision
-    //std::pair<int, int> curr = candidates->at(i);
     if (trianglesIntersect(
           &(allTriPoints->at(candidates->at(i).first)),
           &(allTriPoints->at(candidates->at(i).second)))) {
@@ -195,16 +194,22 @@ bool CollisionDetect::trianglesIntersect(Eigen::MatrixXd *pointsOne, Eigen::Matr
   Eigen::Vector3d t2Two = pointsTwo->row(2);
 
   // Check triangle 1's edges onto triangle 2
-  if (edgeTriangleIntersect(t1Zero, t1One, pointsTwo) ||
-      edgeTriangleIntersect(t1One, t1Two, pointsTwo) ||
-      edgeTriangleIntersect(t1Two, t1Zero, pointsTwo)) {
+  if (edgeTriangleIntersect(t1Zero, t1One, 
+        t2Zero, t2One, t2Two) ||
+      edgeTriangleIntersect(t1One, t1Two, 
+        t2Zero, t2One, t2Two) ||
+      edgeTriangleIntersect(t1Two, t1Zero, 
+        t2Zero, t2One, t2Two)) {
     return true;
   }
 
   // Check triangle 2's edges onto triangle 1
-  if (edgeTriangleIntersect(t2Zero, t2One, pointsOne) ||
-      edgeTriangleIntersect(t2One, t2Two, pointsOne) ||
-      edgeTriangleIntersect(t2Two, t2Zero, pointsOne)) {
+  if (edgeTriangleIntersect(t2Zero, t2One, 
+        t1Zero, t1One, t1Two) ||
+      edgeTriangleIntersect(t2One, t2Two, 
+        t1Zero, t1One, t1Two) ||
+      edgeTriangleIntersect(t2Two, t2Zero, 
+        t1Zero, t1One, t1Two)) {
     return true;
   }
 
@@ -217,7 +222,7 @@ bool isApprox(double val, double target) {
   return ( std::abs(val-target) < epsilon );
 }
 
-bool CollisionDetect::edgeTriangleIntersect(Eigen::Vector3d v0, Eigen::Vector3d v1, Eigen::MatrixXd *trianglePoints) {
+bool CollisionDetect::edgeTriangleIntersect(Eigen::Vector3d v0, Eigen::Vector3d v1, Eigen::Vector3d t0, Eigen::Vector3d t1, Eigen::Vector3d t2) {
 
   /*
     Parametric form of line:
@@ -234,9 +239,11 @@ bool CollisionDetect::edgeTriangleIntersect(Eigen::Vector3d v0, Eigen::Vector3d 
   */
 
   // Put triangle points into vectors
+  /*
   Eigen::Vector3d t0 = trianglePoints->row(0);
   Eigen::Vector3d t1 = trianglePoints->row(1);
   Eigen::Vector3d t2 = trianglePoints->row(2);
+  */
 
   // Check if line segment and plane triangle lies in are parallel
   Eigen::VectorXd triPlaneNormal = (t1 - t0).cross(t2-t0);
