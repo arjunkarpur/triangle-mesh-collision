@@ -12,6 +12,6 @@ Self collision detection for triangles meshes. Implementation in C++, uses Eigen
 
 **Notes**
 
-* Currently only supports .off and .ply file types
-* Toggle the bool `VISUALIZATION` at top of `main.cpp` to show/hide object and collision results.
-* Make sure CMake can find libigl on your machine. Inside the `cmake/FindLIBIGL.cmake`, include the path to your local copy of libigl.
+* Currently only supports .off and .ply file types. Check the available igl::readXXX() methods to add support for different file types. Add to `getTriangleMesh()` method in `main.cpp`
+* Toggle the bool `VISUALIZATION` at top of `main.cpp` to show/hide object and collision results
+* Make sure CMake can find libigl on your machine. Inside the `cmake/FindLIBIGL.cmake`, include the path to your local copy of libiglZ
